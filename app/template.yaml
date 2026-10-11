@@ -1,0 +1,225 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Benchmark application for the thesis "Cross-Layer Context for LLM-Based Detection and
+  Root-Cause Analysis of Configuration Anomalies in AWS Lambda". Four SeBS functions
+  (Table 3.2). This template is the intended state of the application.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [x86_64]
+    Tracing: PassThrough
+    LoggingConfig:
+      LogFormat: Text
+
+Resources:
+  # ---------------------------------------------------------------- storage
+  InputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  OutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-benchmark-output
+            Status: Enabled
+            ExpirationInDays: 1
+
+  CartTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: cart_id, AttributeType: S }
+        - { AttributeName: product_id, AttributeType: S }
+      KeySchema:
+        - { AttributeName: cart_id, KeyType: HASH }
+        - { AttributeName: product_id, KeyType: RANGE }
+
+  # ---------------------------------------------------------------- 130.crud-api
+  CrudApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: app-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: CartTableAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                Resource: !GetAtt CartTable.Arn
+
+  CrudApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/crud_api/
+      Handler: handler.handler
+      MemorySize: 256
+      Timeout: 10
+      Role: !GetAtt CrudApiRole.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref CartTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /cart
+            Method: POST
+
+  # ---------------------------------------------------------------- 120.uploader
+  UploaderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: app-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: WriteOutput
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub "${OutputBucket.Arn}/*"
+
+  UploaderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/uploader/
+      Handler: handler.handler
+      MemorySize: 256
+      Timeout: 30
+      Role: !GetAtt UploaderRole.Arn
+      Environment:
+        Variables:
+          OUTPUT_BUCKET: !Ref OutputBucket
+
+  # ---------------------------------------------------------------- 210.thumbnailer
+  ThumbnailerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: app-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ReadInput
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub "${InputBucket.Arn}/*"
+              - Sid: WriteOutput
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub "${OutputBucket.Arn}/*"
+
+  ThumbnailerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/thumbnailer/
+      Handler: handler.handler
+      MemorySize: 1024
+      Timeout: 30
+      Role: !GetAtt ThumbnailerRole.Arn
+      Environment:
+        Variables:
+          INPUT_BUCKET: !Ref InputBucket
+          OUTPUT_BUCKET: !Ref OutputBucket
+
+  # ---------------------------------------------------------------- 311.compression
+  CompressionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: app-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ListInput
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt InputBucket.Arn
+              - Sid: ReadInput
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub "${InputBucket.Arn}/*"
+              - Sid: WriteOutput
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub "${OutputBucket.Arn}/*"
+
+  CompressionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/compression/
+      Handler: handler.handler
+      MemorySize: 1024
+      Timeout: 60
+      Role: !GetAtt CompressionRole.Arn
+      Environment:
+        Variables:
+          INPUT_BUCKET: !Ref InputBucket
+          OUTPUT_BUCKET: !Ref OutputBucket
+
+Outputs:
+  InputBucketName:
+    Value: !Ref InputBucket
+  OutputBucketName:
+    Value: !Ref OutputBucket
+  CartTableName:
+    Value: !Ref CartTable
+  CrudApiUrl:
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/cart"

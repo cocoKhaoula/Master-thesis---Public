@@ -1,0 +1,26 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# AWS SAM build output
+.aws-sam/
+
+# Secrets / local env
+.env
+*.pem
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Benchmark app working repository (nested git repo, created by `lambda-rca init-app-repo`)
+workspace/
+
+# Harness crash-recovery state
+data/harness_state.json

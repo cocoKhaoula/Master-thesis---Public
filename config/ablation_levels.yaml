@@ -1,0 +1,52 @@
+# Ablation levels (thesis Table 2.3) and the context sources behind them (Table 3.1).
+# A level is defined only by which MCP servers and custom tools are enabled
+# (requirement R3); the prompt, model and temperature never change.
+#
+# Pin server versions for the final runs (e.g. awslabs.iam-mcp-server@1.2.3) and record
+# them in Appendix G. `@latest` is fine for the pilot.
+
+mcp_servers:
+  cloudwatch:
+    command: uvx
+    args: ["awslabs.cloudwatch-mcp-server@latest"]
+  iam:
+    command: uvx
+    args: ["awslabs.iam-mcp-server@latest", "--readonly"]
+  iac:
+    # CloudFormation / Cloud Control API server: reads the live configuration of
+    # AWS::Lambda::Function and AWS::IAM::Role resources.
+    command: uvx
+    args: ["awslabs.cfn-mcp-server@latest", "--readonly"]
+
+# Defence in depth on top of the read-only role and --readonly flags (Section 8.1):
+# any MCP tool whose name starts with one of these prefixes is never given to the agent.
+blocked_tool_prefixes:
+  [create, delete, put, update, attach, detach, add, remove, tag, untag, invoke, run, start, stop, set, enable, disable]
+
+# Custom tools implemented in src/lambda_rca/agent/tools/
+custom_tools:
+  iac_template: [read_iac_template]                       # intended state (template file)
+  code: [list_commits, show_commit, read_source_file]    # source code and git history
+
+levels:
+  L0:
+    description: Raw logs in the prompt, no tools
+    raw_logs_in_prompt: true
+    mcp: []
+    custom: []
+  L1:
+    description: Telemetry tools (metrics, logs)
+    mcp: [cloudwatch]
+    custom: []
+  L2:
+    description: L1 + IAM policies
+    mcp: [cloudwatch, iam]
+    custom: []
+  L3:
+    description: L2 + IaC template and live configuration
+    mcp: [cloudwatch, iam, iac]
+    custom: [iac_template]
+  L4:
+    description: L3 + source code and git history
+    mcp: [cloudwatch, iam, iac]
+    custom: [iac_template, code]

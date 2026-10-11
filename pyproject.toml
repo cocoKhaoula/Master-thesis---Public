@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lambda-rca"
+version = "0.1.0"
+description = "Cross-layer context for LLM-based detection and root-cause analysis of configuration anomalies in AWS Lambda (master's thesis experiment code)"
+authors = [{ name = "Khaoula Khazri" }]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "boto3>=1.35",
+    "pyyaml>=6.0",
+    "jsonschema>=4.21",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.8",
+    "pillow>=10.4",
+]
+
+[project.optional-dependencies]
+agent = [
+    "strands-agents>=1.0",
+    "mcp>=1.9",
+]
+dev = ["pytest>=8"]
+
+[project.scripts]
+lambda-rca = "lambda_rca.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

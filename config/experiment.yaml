@@ -1,0 +1,124 @@
+# Experiment configuration (thesis Chapters 2-4).
+# Every value that the thesis reports as a fixed variable of the experiment lives here,
+# so that one file documents a run (Appendix G).
+
+aws:
+  region: eu-central-1
+  stack_name: lambda-rca-bench
+  # Named profiles from ~/.aws/config (Section 5.7): two separate roles.
+  harness_profile: rca-harness     # may change function config, role policies and the stack
+  agent_profile: rca-agent         # read-only (requirement R4)
+
+app:
+  id: lambda-rca-bench             # application identifier passed to the agent
+  # Working git repository of the benchmark application. It is created from ./app by
+  # `lambda-rca init-app-repo`; committed faults (F5) are made here, and the code tool
+  # reads its history. It is deliberately separate from this thesis repository.
+  repo_dir: workspace/app-repo
+  template_file: template.yaml
+
+# Logical IDs in app/template.yaml. Physical names are resolved from the stack at run time.
+functions:
+  crud-api:
+    logical_id: CrudApiFunction
+    role_logical_id: CrudApiRole
+    sebs_id: 130.crud-api
+    primary_action: dynamodb:PutItem      # removed by F1
+    env_var: TABLE_NAME                   # changed by F3
+    env_bad_value: missing-table
+  uploader:
+    logical_id: UploaderFunction
+    role_logical_id: UploaderRole
+    sebs_id: 120.uploader
+    primary_action: s3:PutObject
+    env_var: OUTPUT_BUCKET
+    env_bad_value: missing-bucket-lambda-rca
+  thumbnailer:
+    logical_id: ThumbnailerFunction
+    role_logical_id: ThumbnailerRole
+    sebs_id: 210.thumbnailer
+    primary_action: s3:PutObject
+    env_var: OUTPUT_BUCKET
+    env_bad_value: missing-bucket-lambda-rca
+  compression:
+    logical_id: CompressionFunction
+    role_logical_id: CompressionRole
+    sebs_id: 311.compression
+    primary_action: s3:PutObject
+    env_var: OUTPUT_BUCKET
+    env_bad_value: missing-bucket-lambda-rca
+
+# Name of the inline policy attached to every execution role in the template.
+inline_policy_name: app-policy
+
+faults:
+  F2:                              # lower memory / timeout (Appendix A)
+    memory_size: 128
+    timeout: 3
+  F4:
+    reserved_concurrency: 1
+  F5:                              # faulty committed change: env var value in template.yaml
+    commit_message: "Update {env_var} for {function}"
+  F6:
+    extra_action: s3:ListAllMyBuckets
+
+campaign:
+  seed: 42
+  fault_minutes: 10                # Section 4.2
+  recovery_minutes: 10
+  repetitions: 3                   # per (fault type, function) pair -> 5 x 4 x 3 = 60
+  symptomatic_faults: [F1, F2, F3, F4, F5]
+  silent_windows: 15               # F6
+  normal_windows: 30
+  steady_state_minutes: 60         # training data for Isolation Forest, collected before injections
+  # "hold": the agent runs (and drift detection is captured) right after the window
+  # while the fault is still active, then the fault is reverted. Required because IAM
+  # and live-configuration tools read the *current* AWS state (see README, "Design notes").
+  analysis_mode: hold
+  drift_check_offset_minutes: 8    # when CloudFormation drift detection runs inside a window
+  noise_commits_every: 4           # benign commits in the app repo every N windows (0 = off)
+
+load:
+  requests_per_minute: 40          # per function (Section 3.4: 30-60)
+  burst_concurrency: 3             # concurrent requests per burst; needed for F4 throttling
+
+agent:
+  # Exact Bedrock model / inference-profile ID. Record the value used in Appendix G.
+  model_id: eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+  temperature: 0.0
+  max_tokens: 4096
+  repetitions: 3                   # N = 3 (Section 2.5)
+  parallel_runs: 3
+  max_log_chars_l0: 60000          # raw-log budget for the L0 prompt
+  # Polling interval for agent time-to-detect runs (Section 2.6, eq. 2.5)
+  ttd_poll_minutes: 2
+
+pricing:
+  # USD per 1M tokens at the stated price date (Section 2.6, eq. 2.6). Fill in before reporting.
+  price_date: "2026-10-01"
+  input_per_million: 3.00
+  output_per_million: 15.00
+
+baselines:
+  threshold:
+    error_rate: 0.05               # Errors / Invocations per minute
+    throttles: 1                   # any throttle
+    duration_fraction_of_timeout: 0.8
+    datapoints_to_alarm: 2         # M out of N, like a CloudWatch alarm
+    evaluation_periods: 3
+  iforest:
+    n_estimators: 100
+    max_samples: 256
+    contamination: auto
+    random_state: 42
+    min_consecutive_minutes: 2     # window is anomalous if >= k consecutive minutes are flagged
+
+paths:
+  data_dir: data
+  labels_file: data/labels/labels.jsonl
+  windows_file: data/labels/windows.jsonl   # what the agent sees: ids and time ranges only
+  snapshots_dir: data/snapshots
+  runs_dir: data/runs
+  baselines_dir: data/baselines
+  metrics_dir: data/metrics
+  results_dir: results
