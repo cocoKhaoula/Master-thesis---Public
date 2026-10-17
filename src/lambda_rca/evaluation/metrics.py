@@ -76,9 +76,14 @@ def localisation_metrics(pairs: list[tuple[dict, dict]], functions_cfg: dict) ->
 
 
 # ------------------------------------------------------------------ cost and time
-def cost_usd(input_tokens: int, output_tokens: int, pricing: dict[str, Any]) -> float:
-    """(2.6): Cost(i) = T_in * p_in + T_out * p_out."""
-    return (input_tokens * pricing["input_per_million"] + output_tokens * pricing["output_per_million"]) / 1e6
+def cost_usd(input_tokens: int, output_tokens: int, pricing: dict[str, Any],
+             cache_read_tokens: int = 0, cache_write_tokens: int = 0) -> float:
+    """(2.6): Cost(i) = T_in * p_in + T_out * p_out, with the input split into uncached,
+    cache-write and cache-read tokens, each at its own price."""
+    return (input_tokens * pricing["input_per_million"]
+            + cache_write_tokens * pricing.get("cache_write_per_million", pricing["input_per_million"])
+            + cache_read_tokens * pricing.get("cache_read_per_million", pricing["input_per_million"])
+            + output_tokens * pricing["output_per_million"]) / 1e6
 
 
 def ttd_minutes(start_iso: str, detected_iso: str | None) -> float:

@@ -12,6 +12,8 @@
         "cloudwatch:DescribeAlarmHistory",
         "logs:DescribeLogGroups",
         "logs:DescribeLogStreams",
+        "logs:DescribeQueryDefinitions",
+        "logs:DescribeQueries",
         "logs:FilterLogEvents",
         "logs:GetLogEvents",
         "logs:StartQuery",

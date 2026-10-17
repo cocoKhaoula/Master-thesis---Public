@@ -47,6 +47,8 @@ def load_predictions(cfg: Config) -> pd.DataFrame:
                 "root_cause_layer": a.get("root_cause_layer"), "candidates": a.get("candidates", []),
                 "detected_at": None, "valid": r["valid"],
                 "input_tokens": r["usage"]["input_tokens"], "output_tokens": r["usage"]["output_tokens"],
+                "cache_read_tokens": r["usage"].get("cache_read_input_tokens", 0),
+                "cache_write_tokens": r["usage"].get("cache_write_input_tokens", 0),
                 "latency_s": r["latency_s"], "n_tool_calls": len(r["tool_calls"]),
             })
     for b in BASELINES:
@@ -56,7 +58,8 @@ def load_predictions(cfg: Config) -> pd.DataFrame:
                 "anomaly": bool(r["anomaly"]), "function": r.get("function"),
                 "root_cause_layer": r.get("root_cause_layer"), "candidates": r.get("candidates", []),
                 "detected_at": r.get("detected_at"), "valid": True,
-                "input_tokens": 0, "output_tokens": 0, "latency_s": np.nan, "n_tool_calls": 0,
+                "input_tokens": 0, "output_tokens": 0, "cache_read_tokens": 0, "cache_write_tokens": 0,
+                "latency_s": np.nan, "n_tool_calls": 0,
             })
     return pd.DataFrame(rows)
 
@@ -92,13 +95,14 @@ def _per_rep(preds: pd.DataFrame, labels: dict[str, dict], cfg: Config, fault_ty
         c = confusion(pairs)
         row = {"method": method, "rep": rep, "n_windows": len(pairs), **c, **detection_metrics(c),
                **localisation_metrics(pairs, cfg.functions)}
-        tin = sum(p["input_tokens"] for _, p in pairs)
-        tout = sum(p["output_tokens"] for _, p in pairs)
-        row["tokens_per_window"] = (tin + tout) / len(pairs)
+        # tokens processed by the model = uncached + cache-write + cache-read input + output
+        tok = lambda p: p["input_tokens"] + p["cache_read_tokens"] + p["cache_write_tokens"] + p["output_tokens"]
+        row["tokens_per_window"] = sum(tok(p) for _, p in pairs) / len(pairs)
         sym = [(l, p) for l, p in pairs if l["symptomatic"]]
-        row["tokens_per_incident"] = (sum(p["input_tokens"] + p["output_tokens"] for _, p in sym) / len(sym)
-                                      if sym else np.nan)
-        row["cost_per_window_usd"] = cost_usd(tin, tout, cfg["pricing"]) / len(pairs)
+        row["tokens_per_incident"] = sum(tok(p) for _, p in sym) / len(sym) if sym else np.nan
+        row["cost_per_window_usd"] = sum(
+            cost_usd(p["input_tokens"], p["output_tokens"], cfg["pricing"], p["cache_read_tokens"], p["cache_write_tokens"])
+            for _, p in pairs) / len(pairs)
         row["invalid_rate"] = 1 - sum(p["valid"] for _, p in pairs) / len(pairs)
         rows.append(row)
     return pd.DataFrame(rows)

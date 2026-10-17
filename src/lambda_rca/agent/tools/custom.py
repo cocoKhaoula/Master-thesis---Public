@@ -2,18 +2,48 @@
 its git history (L4). Built per window, because they are pinned to the window end."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from .gitview import GitView
 
 
-def build_custom_tools(groups: list[str], repo: Path, template_file: str, as_of_iso: str) -> list:
+def build_custom_tools(groups: list[str], repo: Path, template_file: str, as_of_iso: str,
+                       lambda_client=None, function_names: list[str] | None = None) -> list:
     if not groups:
         return []
     from strands import tool  # imported lazily so the rest of the package works without strands
 
     view = GitView(repo, as_of_iso)
     tools = []
+
+    if "live_config" in groups:
+        @tool
+        def read_live_configuration(function_name: str = "") -> str:
+            """Return the live (deployed) configuration of the application's Lambda functions:
+            memory size, timeout, environment variables, reserved concurrency, execution role,
+            last modification time and state. Read-only.
+
+            Args:
+                function_name: one function name; leave empty to return all functions.
+            """
+            names = [function_name] if function_name else (function_names or [])
+            out = {}
+            for name in names:
+                if function_names and name not in function_names:
+                    out[name] = "not a function of this application"
+                    continue
+                c = lambda_client.get_function_configuration(FunctionName=name)
+                conc = lambda_client.get_function_concurrency(FunctionName=name)
+                out[name] = {
+                    "MemorySize": c.get("MemorySize"), "Timeout": c.get("Timeout"),
+                    "Environment": c.get("Environment", {}).get("Variables", {}),
+                    "ReservedConcurrentExecutions": conc.get("ReservedConcurrentExecutions"),
+                    "Role": c.get("Role"), "LastModified": c.get("LastModified"),
+                    "State": c.get("State"), "LastUpdateStatus": c.get("LastUpdateStatus"),
+                }
+            return json.dumps(out, indent=2)
+        tools.append(read_live_configuration)
 
     if "iac_template" in groups:
         @tool

@@ -43,9 +43,13 @@ def seed_inputs(cfg: Config) -> None:
 
     s3.put_object(Bucket=bucket, Key=SEED_UPLOAD_KEY, Body=rng.randbytes(512 * 1024))
 
+    old = s3.list_objects_v2(Bucket=bucket, Prefix=COMPRESSION_PREFIX).get("Contents", [])
+    if old:
+        s3.delete_objects(Bucket=bucket, Delete={"Objects": [{"Key": o["Key"]} for o in old]})
+    # about 0.7 MB per file: a few seconds per invocation at the intended memory size
     words = [f"word{i}" for i in range(2000)]
-    for i in range(8):
-        text = " ".join(rng.choice(words) for _ in range(400_000))
+    for i in range(4):
+        text = " ".join(rng.choice(words) for _ in range(80_000))
         s3.put_object(Bucket=bucket, Key=f"{COMPRESSION_PREFIX}file{i}.txt", Body=text.encode())
     log.info("seeded inputs in %s", bucket)
 
@@ -56,8 +60,9 @@ class LoadGenerator:
         s = session(cfg, "harness")
         # No client-side retries: a throttled or failed request must show up as such.
         self.lam = s.client("lambda", config=BotoConfig(retries={"max_attempts": 1, "mode": "standard"},
-                                                         read_timeout=120))
-        self.s3 = s.client("s3")
+                                                         read_timeout=120, max_pool_connections=64))
+        # SigV4 and the regional endpoint: newer regions reject other pre-signed URLs
+        self.s3 = s.client("s3", config=BotoConfig(signature_version="s3v4", s3={"addressing_style": "virtual"}))
         self.functions = resolve_functions(cfg, "harness")
         self.input_bucket = stack_outputs(cfg)["InputBucketName"]
         self.stop = threading.Event()
@@ -88,7 +93,7 @@ class LoadGenerator:
                                    Payload=json.dumps(self.payload(key)).encode())
             ok = "FunctionError" not in resp
         except Exception as e:  # throttling, timeouts
-            log.debug("%s: %s", key, e)
+            log.warning("%s: %s", key, e)
             ok = False
         self.stats[key]["ok" if ok else "error"] += 1
 

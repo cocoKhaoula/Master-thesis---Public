@@ -39,8 +39,36 @@ def _mcp_client(server: dict[str, Any], cfg: Config):
     env.pop("AWS_ACCESS_KEY_ID", None)
     env.pop("AWS_SECRET_ACCESS_KEY", None)
     env.pop("AWS_SESSION_TOKEN", None)
-    params = StdioServerParameters(command=server["command"], args=server["args"], env=env)
-    return MCPClient(lambda: stdio_client(params))
+    params = StdioServerParameters(command=_resolve_command(server["command"], cfg.root), args=server["args"], env=env)
+    # first start of a server downloads its packages through uvx; later starts use the cache
+    return MCPClient(lambda: stdio_client(params), startup_timeout=180)
+
+
+def _windows_user_env(name: str) -> str | None:
+    """Value saved with `setx` but not yet visible to an already running process."""
+    if os.name != "nt":
+        return None
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
+            return winreg.QueryValueEx(k, name)[0]
+    except OSError:
+        return None
+
+
+def _resolve_command(cmd: str, root=None) -> str:
+    """Find an MCP server executable: in the project's .mcp-venv, next to the running
+    Python, or on PATH."""
+    import shutil
+    import sys
+    dirs = [os.path.dirname(sys.executable)]
+    if root is not None:
+        dirs = [str(root / ".mcp-venv" / "Scripts"), str(root / ".mcp-venv" / "bin")] + dirs
+    for d in dirs:
+        found = shutil.which(cmd, path=d)
+        if found:
+            return found
+    return shutil.which(cmd) or cmd
 
 
 def _tool_name(t) -> str:
@@ -77,12 +105,32 @@ class AgentRunner:
         self.functions = resolve_functions(cfg, "agent")
         self.agent_session = session(cfg, "agent")
 
+    def _model(self):
+        """The model is a fixed variable of the experiment (Section 2.4): same model,
+        temperature and token limit at every level. Returns (model, model_id)."""
+        a = self.cfg["agent"]
+        if a.get("provider", "bedrock") == "anthropic":
+            from strands.models.anthropic import AnthropicModel
+            key = os.environ.get("ANTHROPIC_API_KEY") or _windows_user_env("ANTHROPIC_API_KEY")
+            if not key:
+                raise RuntimeError("ANTHROPIC_API_KEY is not set")
+            model_id = a["anthropic_model_id"]
+            from strands.models.model import CacheConfig
+            # no temperature: Claude 5.5 models return 400 for non-default sampling parameters.
+            # Prompt caching re-uses the identical prefix (tools, system prompt, earlier steps)
+            # between the steps of one run; it changes cost only, not what the model sees.
+            cache = CacheConfig(strategy="anthropic", tools_ttl="5m", system_prompt_ttl=True)
+            return AnthropicModel(client_args={"api_key": key}, model_id=model_id,
+                                  max_tokens=a["max_tokens"], cache_config=cache), model_id
+        from strands.models import BedrockModel
+        return BedrockModel(boto_session=self.agent_session, model_id=a["model_id"],
+                            temperature=a["temperature"], max_tokens=a["max_tokens"]), a["model_id"]
+
     def run_path(self, level: str, window_id: str, rep: int, suffix: str = "") -> Path:
         return self.cfg.path("runs_dir") / level / f"{window_id}{suffix}_r{rep}.json"
 
     def run_once(self, level: str, window: dict, rep: int, out: Path | None = None) -> dict:
         from strands import Agent
-        from strands.models import BedrockModel
 
         out = out or self.run_path(level, window["window_id"], rep)
         if out.exists():
@@ -98,8 +146,7 @@ class AgentRunner:
         prompt = user_message(window, self.cfg["app"]["id"], self.cfg.region,
                               [f.function_name for f in self.functions.values()], raw_logs)
 
-        model = BedrockModel(boto_session=self.agent_session, model_id=a["model_id"],
-                             temperature=a["temperature"], max_tokens=a["max_tokens"])
+        model, model_id = self._model()
         blocked = self.levels.get("blocked_tool_prefixes", [])
         started = utcnow()
         t0 = time.perf_counter()
@@ -111,7 +158,9 @@ class AgentRunner:
                 client = stack.enter_context(_mcp_client(self.levels["mcp_servers"][name], self.cfg))
                 tools += [t for t in client.list_tools_sync() if _allowed(_tool_name(t), blocked)]
             groups = [g for g in lvl.get("custom", [])]
-            tools += build_custom_tools(groups, self.cfg.app_repo, self.cfg["app"]["template_file"], window["end"])
+            tools += build_custom_tools(groups, self.cfg.app_repo, self.cfg["app"]["template_file"], window["end"],
+                                        lambda_client=self.agent_session.client("lambda"),
+                                        function_names=[f.function_name for f in self.functions.values()])
             tool_names = sorted(_tool_name(t) for t in tools)
             agent = Agent(model=model, tools=tools, system_prompt=SYSTEM_PROMPT, callback_handler=None)
             try:
@@ -127,11 +176,14 @@ class AgentRunner:
         answer, valid, parse_error = parse_answer(text)
         record = {
             "window_id": window["window_id"], "level": level, "repetition": rep,
-            "window": window, "model_id": a["model_id"], "temperature": a["temperature"],
+            "window": window, "provider": a.get("provider", "bedrock"), "model_id": model_id,
+            "temperature": a["temperature"] if a.get("provider", "bedrock") == "bedrock" else "model default",
             "started": iso(started), "latency_s": round(latency, 2),
             "answer": answer, "valid": valid, "parse_error": parse_error, "error": error,
             "raw_text": text,
             "usage": {"input_tokens": usage.get("inputTokens", 0), "output_tokens": usage.get("outputTokens", 0),
+                      "cache_read_input_tokens": usage.get("cacheReadInputTokens", 0),
+                      "cache_write_input_tokens": usage.get("cacheWriteInputTokens", 0),
                       "total_tokens": usage.get("totalTokens", 0)},
             "tools_available": tool_names,
             "tool_calls": _tool_calls(messages),

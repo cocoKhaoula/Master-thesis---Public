@@ -22,7 +22,7 @@ dependencies = [
 
 [project.optional-dependencies]
 agent = [
-    "strands-agents>=1.0",
+    "strands-agents[anthropic]>=1.0",
     "mcp>=1.9",
 ]
 dev = ["pytest>=8"]

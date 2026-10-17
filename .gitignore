@@ -24,3 +24,9 @@ workspace/
 
 # Harness crash-recovery state
 data/harness_state.json
+
+# Pinned AWS MCP servers (created with pip, see README)
+.mcp-venv/
+
+# Local run logs
+logs/

@@ -28,7 +28,7 @@ def handler(event, context):
 
     begin = time.time()
     archive = io.BytesIO()
-    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
         for key, data in files.items():
             zf.writestr(os.path.basename(key), data)
     compute_time = time.time() - begin

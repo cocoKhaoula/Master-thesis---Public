@@ -3,7 +3,7 @@
 # so that one file documents a run (Appendix G).
 
 aws:
-  region: eu-central-1
+  region: eu-north-1               # eu-central-1 is denied by the organization region rule
   stack_name: lambda-rca-bench
   # Named profiles from ~/.aws/config (Section 5.7): two separate roles.
   harness_profile: rca-harness     # may change function config, role policies and the stack
@@ -69,7 +69,7 @@ campaign:
   repetitions: 3                   # per (fault type, function) pair -> 5 x 4 x 3 = 60
   symptomatic_faults: [F1, F2, F3, F4, F5]
   silent_windows: 15               # F6
-  normal_windows: 30
+  normal_windows: 20               # reduced from 30 to fit the deadline (see README)
   steady_state_minutes: 60         # training data for Isolation Forest, collected before injections
   # "hold": the agent runs (and drift detection is captured) right after the window
   # while the fault is still active, then the fault is reverted. Required because IAM
@@ -80,14 +80,22 @@ campaign:
 
 load:
   requests_per_minute: 40          # per function (Section 3.4: 30-60)
-  burst_concurrency: 3             # concurrent requests per burst; needed for F4 throttling
+  burst_concurrency: 2             # concurrent requests per burst; needed for F4 throttling
+                                   # (2 keeps the peak under the account limit of 10)
 
 agent:
   # Exact Bedrock model / inference-profile ID. Record the value used in Appendix G.
-  model_id: eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+  # Model provider: "bedrock" (Amazon Bedrock, model_id) or "anthropic" (Anthropic API,
+  # anthropic_model_id; the key is read from the ANTHROPIC_API_KEY environment variable).
+  # Bedrock was not usable on the experiment account, so the runs use the Anthropic API.
+  provider: anthropic
+  model_id: eu.anthropic.claude-sonnet-5-5
+  anthropic_model_id: claude-haiku-5-5   # cheapest current model ($0.10 / $0.50 per 1M tokens)
+  # Claude 5.5 models reject non-default sampling parameters, so temperature is only
+  # sent to providers/models that accept it (Bedrock path); otherwise the model default is used.
   temperature: 0.0
   max_tokens: 4096
-  repetitions: 3                   # N = 3 (Section 2.5)
+  repetitions: 2                   # reduced from N = 3 (Section 2.5) to fit the deadline
   parallel_runs: 3
   max_log_chars_l0: 60000          # raw-log budget for the L0 prompt
   # Polling interval for agent time-to-detect runs (Section 2.6, eq. 2.5)
@@ -95,9 +103,12 @@ agent:
 
 pricing:
   # USD per 1M tokens at the stated price date (Section 2.6, eq. 2.6). Fill in before reporting.
-  price_date: "2026-10-01"
-  input_per_million: 3.00
-  output_per_million: 15.00
+  price_date: "2026-10-17"          # Anthropic API list price of claude-haiku-5-5
+  input_per_million: 0.10
+  output_per_million: 0.50
+  # prompt-cache prices (standard multipliers: write 1.25x, read 0.1x of the input price)
+  cache_write_per_million: 0.125
+  cache_read_per_million: 0.01
 
 baselines:
   threshold:

@@ -74,6 +74,10 @@ class Campaign:
         plan = [w for w in plan_windows(self.cfg) if w.window_id not in done]
         if only:
             plan = [w for w in plan if w.window_id in only]
+        if not self.dry_run and any(w.fault_type == "F4" for w in plan) and not self._f4_possible():
+            log.warning("account concurrency limit too low for reserved concurrency (F4); "
+                        "F4 windows are postponed until the quota increase is approved")
+            plan = [w for w in plan if w.fault_type != "F4"]
         if limit:
             plan = plan[:limit]
         log.info("%d windows to run (%d already labelled)", len(plan), len(done))
@@ -82,6 +86,11 @@ class Campaign:
             if every and n % every == 0 and self.cfg.app_repo.exists() and not self.dry_run:
                 apprepo.benign_commit(self.cfg.app_repo, n)
             self.run_window(w)
+
+    def _f4_possible(self) -> bool:
+        """Reserved concurrency must leave at least 10 unreserved executions in the account."""
+        limit = self.lam.get_account_settings()["AccountLimit"]["ConcurrentExecutions"]
+        return limit - self.cfg["faults"]["F4"]["reserved_concurrency"] >= 10 + 1
 
     def run_window(self, w: PlannedWindow) -> Label:
         c = self.cfg["campaign"]
