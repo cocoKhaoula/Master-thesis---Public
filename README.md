@@ -43,14 +43,21 @@ results/                  Tables (CSV/Markdown) and figures produced by `lambda-
 
 - Python 3.11+, git
 - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) and AWS CLI v2
-- [uv](https://docs.astral.sh/uv/) (`uvx` starts the AWS MCP servers)
-- A **dedicated AWS test account** with Amazon Bedrock access to a Claude Sonnet model in your region
+- A **dedicated AWS test account** (the experiment runs in **eu-north-1**)
+- An **Anthropic API key** for the agent model (Claude Haiku 5.5), saved as the user environment variable `ANTHROPIC_API_KEY` (`setx ANTHROPIC_API_KEY "..."` on Windows). Amazon Bedrock is supported through `agent.provider: bedrock` but was not usable on the experiment account.
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate          # Windows  (Linux/macOS: source .venv/bin/activate)
 pip install -e ".[agent,dev]"
 pytest                          # offline unit tests, no AWS needed
+```
+
+The two official AWS MCP servers are installed once into their own environment, which pins their versions (recorded in Appendix G):
+
+```bash
+python -m venv .mcp-venv
+.mcp-venv\Scripts\python -m pip install awslabs.cloudwatch-mcp-server==0.3.1 awslabs.iam-mcp-server==1.1.2
 ```
 
 ## AWS setup (once)
@@ -62,7 +69,7 @@ Use two named profiles in `~/.aws/config`. The repository never stores credentia
 | `rca-harness` | deploy the stack, inject and revert faults, run drift detection | `iam/harness-policy.json`, plus deployment rights for `sam deploy` (admin in the test account is fine) |
 | `rca-agent` | the agent and its MCP servers, read-only | `iam/agent-readonly-policy.json` |
 
-Set the region, the Bedrock model ID and the prices in `config/experiment.yaml`.
+The agent profile can be a role that the harness user assumes (`role_arn` + `source_profile` in `~/.aws/config`). Region, model and prices are set in `config/experiment.yaml`.
 
 ## Running the experiment
 
@@ -75,25 +82,36 @@ lambda-rca seed                 #    upload input image/files
 lambda-rca show-tools           #    check which tools each ablation level gets
 ```
 
-In a **second terminal**, start the load generator and leave it running for the whole campaign:
+Long-running commands are started as independent background processes with `scripts/start.ps1`, so they keep running when the terminal or editor is closed. Output goes to `logs/<command>.log`, and `scripts/stop.ps1 <command>` stops them:
 
 ```bash
-lambda-rca loadgen
+powershell -ExecutionPolicy Bypass -File scripts\start.ps1 loadgen
 ```
-
-Then, back in the first terminal:
 
 ```bash
-lambda-rca steady-state         # 2. 60 min fault-free data (Isolation Forest training only)
-lambda-rca campaign --limit 3 --reps 1    # pilot: 3 windows, 1 repetition, all levels
-lambda-rca campaign             # 3. full campaign: 105 windows x 5 levels x 3 reps (~35 h + agent time)
-lambda-rca baselines            # 4. threshold, Isolation Forest, drift on the same windows
-lambda-rca evaluate             # 5. metrics -> results/*.csv, results/results.md
-lambda-rca plots                #    figures for Chapter 7
+powershell -ExecutionPolicy Bypass -File scripts\start.ps1 steady-state --minutes 30
 ```
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts\start.ps1 campaign --only W002,W005,W007 --reps 1
+```
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts\start.ps1 campaign
+```
+
+The first starts the load generator, which runs for the whole campaign; the second records the Isolation Forest training data; the third is the pilot; the fourth is the full campaign. Then:
+
+```bash
+lambda-rca baselines            # threshold, Isolation Forest, drift on the same windows
+lambda-rca evaluate             # metrics -> results/*.csv, results/results.md
+lambda-rca plots                # figures for Chapter 7
+```
+
+The campaign has 95 windows (60 symptomatic, 15 silent drift, 20 normal) and runs the agent at 5 levels with 2 repetitions per window (950 runs, about 38 h). F4 windows are postponed automatically while the account's Lambda concurrency quota is too low for reserved concurrency.
 
 Other commands:
-- `lambda-rca plan` prints the 105 planned windows.
+- `lambda-rca plan` prints the 95 planned windows.
 - `lambda-rca campaign --ttd` adds the agent time-to-detect polling runs.
 - `lambda-rca recover` reverts a fault left active after a crash or Ctrl-C.
 
@@ -103,7 +121,7 @@ The campaign is resumable: windows that already have a label are skipped, and so
 
 ## Design notes (please reflect these in the thesis text)
 
-1. **The agent runs while the fault is still active ("hold" mode).** The IAM and live-configuration MCP servers read the *current* AWS state. If the agent analysed a window after the revert, it would see the restored configuration, and the IAM/IaC layers would carry no information. So each window runs: inject → 10-min window → drift check (at minute 8) and snapshot → agent runs for L0–L4 × 3 reps → revert → 10-min recovery. The telemetry the agent queries is still limited to the fixed window `[start, end]`. Section 3.1 currently says that "the agent analyses windows after they are recorded"; it should describe this order instead.
+1. **The agent runs while the fault is still active ("hold" mode).** The IAM tools and the live-configuration tool read the *current* AWS state. If the agent analysed a window after the revert, it would see the restored configuration, and the IAM/IaC layers would carry no information. So each window runs: inject → 10-min window → drift check (at minute 8) and snapshot → agent runs for L0–L4 × 2 reps → revert → 10-min recovery. The telemetry the agent queries is still limited to the fixed window `[start, end]`. Section 3.1 currently says that "the agent analyses windows after they are recorded"; it should describe this order instead.
 2. **The code tool is pinned to the window end.** It only shows commits made before the end of the window, so a later `git revert` of an F5 fault cannot leak into the analysis.
 3. **Window IDs are neutral** (`W001` …). The agent gets only the ID and the time range (`data/labels/windows.jsonl`). Labels stay in `labels.jsonl` and are never passed to the agent.
 4. **Benign commits** (README notes) go into the app repo every 4 windows, so "the last commit is the fault" is not a shortcut at L4.
@@ -138,3 +156,6 @@ data/metrics/W###.csv          per-minute CloudWatch metrics
 data/runs/L#/W###_r#.json      agent answer, tool calls, tokens, latency per run
 data/baselines/*.jsonl         baseline predictions; cfn_drift/W###.json raw drift results
 ```
+9. **Model and sampling.** The agent uses Claude Haiku 5.5 through the Anthropic API, with prompt caching. Claude 5.5 models reject sampling parameters, so the model's default sampling is used instead of temperature 0; run-to-run variation is covered by the repetitions. Cached input tokens are counted in the token totals and priced separately in the cost analysis.
+10. **IaC layer.** The AWS CloudFormation MCP server was withdrawn, and its successor (`awslabs.aws-iac-mcp-server`) only validates templates and searches documentation. Level L3 therefore uses two custom read-only tools: `read_iac_template` (intended state) and `read_live_configuration` (live Lambda configuration through the read-only role).
+11. **Region.** The organization's region policy only allows eu-north-1, so the stack, the agent role and all measurements are in eu-north-1.

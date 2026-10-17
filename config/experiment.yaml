@@ -70,7 +70,7 @@ campaign:
   symptomatic_faults: [F1, F2, F3, F4, F5]
   silent_windows: 15               # F6
   normal_windows: 20               # reduced from 30 to fit the deadline (see README)
-  steady_state_minutes: 60         # training data for Isolation Forest, collected before injections
+  steady_state_minutes: 30         # training data for Isolation Forest, collected before injections (reduced from 60)
   # "hold": the agent runs (and drift detection is captured) right after the window
   # while the fault is still active, then the fault is reverted. Required because IAM
   # and live-configuration tools read the *current* AWS state (see README, "Design notes").
