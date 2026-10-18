@@ -13,11 +13,14 @@ param(
 )
 $root = Split-Path -Parent $PSScriptRoot
 $exe = Join-Path $root ".venv\Scripts\lambda-rca.exe"
+# a script in scripts\ (e.g. pilot.cmd) can be started by its name instead of a lambda-rca command
+$script = Join-Path $PSScriptRoot "$Command.cmd"
 $logs = Join-Path $root "logs"
 New-Item -ItemType Directory -Force $logs | Out-Null
 $log = Join-Path $logs "$Command.log"
 $cmdArgs = (@($Command) + $Rest) -join ' '
-$line = "cmd.exe /c `"`"$exe`" $cmdArgs >> `"$log`" 2>&1`""
+if (Test-Path $script) { $line = "cmd.exe /c `"`"$script`" >> `"$log`" 2>&1`"" }
+else { $line = "cmd.exe /c `"`"$exe`" $cmdArgs >> `"$log`" 2>&1`"" }
 $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = $line; CurrentDirectory = $root }
 if ($r.ReturnValue -ne 0) { Write-Host "failed to start (code $($r.ReturnValue))"; exit 1 }
 Set-Content -Path (Join-Path $logs "$Command.pid") -Value $r.ProcessId

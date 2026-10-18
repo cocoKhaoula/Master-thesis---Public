@@ -82,10 +82,59 @@ class Campaign:
             plan = plan[:limit]
         log.info("%d windows to run (%d already labelled)", len(plan), len(done))
         every = self.cfg["campaign"].get("noise_commits_every") or 0
+        failed: list[PlannedWindow] = []
         for n, w in enumerate(plan):
             if every and n % every == 0 and self.cfg.app_repo.exists() and not self.dry_run:
                 apprepo.benign_commit(self.cfg.app_repo, n)
+            if not self._run_safely(w):
+                failed.append(w)
+        # windows that failed (e.g. network loss) are retried once at the end
+        for w in failed:
+            self._run_safely(w)
+
+    def _run_safely(self, w: PlannedWindow) -> bool:
+        """Run one window; on failure discard its partial outputs so it can be repeated."""
+        try:
             self.run_window(w)
+            return True
+        except Exception:
+            log.exception("window %s failed; discarding partial outputs", w.window_id)
+            self._discard(w.window_id)
+            self._wait_for_aws()
+            return False
+
+    def _discard(self, window_id: str) -> None:
+        for f in self.cfg.path("runs_dir").glob(f"L*/{window_id}_*.json"):
+            f.unlink()
+        (self.cfg.path("baselines_dir") / "cfn_drift" / f"{window_id}.json").unlink(missing_ok=True)
+        (self.cfg.path("snapshots_dir") / f"{window_id}.json").unlink(missing_ok=True)
+        wf = self.cfg.path("windows_file")
+        if wf.exists():
+            from ..io import write_jsonl
+            write_jsonl(wf, [r for r in read_jsonl(wf) if r["window_id"] != window_id])
+
+    def _wait_for_aws(self, max_minutes: int = 120) -> None:
+        """Block until AWS is reachable again (e.g. after the network dropped)."""
+        sts = session(self.cfg, "harness").client("sts")
+        deadline = time.time() + max_minutes * 60
+        while time.time() < deadline:
+            try:
+                sts.get_caller_identity()
+                return
+            except Exception:
+                log.warning("AWS not reachable, waiting")
+                time.sleep(30)
+
+    @staticmethod
+    def _retry(fn, what: str, attempts: int = 60, wait_s: int = 30):
+        for i in range(attempts):
+            try:
+                return fn()
+            except Exception:
+                if i == attempts - 1:
+                    raise
+                log.warning("%s failed (attempt %d), retrying in %ds", what, i + 1, wait_s, exc_info=True)
+                time.sleep(wait_s)
 
     def _f4_possible(self) -> bool:
         """Reserved concurrency must leave at least 10 unreserved executions in the account."""
@@ -127,7 +176,8 @@ class Campaign:
                 self.analyse(window)
         finally:
             if fault and injection:
-                fault.revert(injection.saved)
+                # retried for up to 30 minutes: a fault must never stay active (R2)
+                self._retry(lambda: fault.revert(injection.saved), f"revert of {w.window_id}")
                 self.state_file.unlink(missing_ok=True)
                 log.info("window %s: reverted", w.window_id)
 

@@ -22,7 +22,7 @@ def run_baselines(cfg: Config) -> None:
     functions = resolve_functions(cfg, "harness")
     metrics_dir = cfg.path("metrics_dir")
     out_dir = cfg.path("baselines_dir")
-    windows = list(read_jsonl(cfg.path("windows_file")))
+    windows = list({w["window_id"]: w for w in read_jsonl(cfg.path("windows_file"))}.values())
     timeouts = intended_timeouts(cfg.root / "app" / cfg["app"]["template_file"], cfg.functions)
 
     steady = read_json(cfg.path("data_dir") / "labels" / "steady_state.json")
