@@ -95,7 +95,7 @@ agent:
   # sent to providers/models that accept it (Bedrock path); otherwise the model default is used.
   temperature: 0.0
   max_tokens: 4096
-  repetitions: 2                   # reduced from N = 3 (Section 2.5) to fit the deadline
+  repetitions: 1                   # reduced from N = 3 (Section 2.5) to fit the deadline and budget
   parallel_runs: 3
   max_log_chars_l0: 60000          # raw-log budget for the L0 prompt
   # Polling interval for agent time-to-detect runs (Section 2.6, eq. 2.5)

@@ -108,7 +108,7 @@ lambda-rca evaluate             # metrics -> results/*.csv, results/results.md
 lambda-rca plots                # figures for Chapter 7
 ```
 
-The campaign has 95 windows (60 symptomatic, 15 silent drift, 20 normal) and runs the agent at 5 levels with 2 repetitions per window (950 runs, about 38 h). F4 windows are postponed automatically while the account's Lambda concurrency quota is too low for reserved concurrency.
+The campaign has 95 windows (60 symptomatic, 15 silent drift, 20 normal) and runs the agent at 5 levels with 1 repetition per window (475 runs, about 40 h). F4 windows are postponed automatically while the account's Lambda concurrency quota is too low for reserved concurrency.
 
 Other commands:
 - `lambda-rca plan` prints the 95 planned windows.
@@ -121,7 +121,7 @@ The campaign is resumable: windows that already have a label are skipped, and so
 
 ## Design notes (please reflect these in the thesis text)
 
-1. **The agent runs while the fault is still active ("hold" mode).** The IAM tools and the live-configuration tool read the *current* AWS state. If the agent analysed a window after the revert, it would see the restored configuration, and the IAM/IaC layers would carry no information. So each window runs: inject → 10-min window → drift check (at minute 8) and snapshot → agent runs for L0–L4 × 2 reps → revert → 10-min recovery. The telemetry the agent queries is still limited to the fixed window `[start, end]`. Section 3.1 currently says that "the agent analyses windows after they are recorded"; it should describe this order instead.
+1. **The agent runs while the fault is still active ("hold" mode).** The IAM tools and the live-configuration tool read the *current* AWS state. If the agent analysed a window after the revert, it would see the restored configuration, and the IAM/IaC layers would carry no information. So each window runs: inject → 10-min window → drift check (at minute 8) and snapshot → agent runs for L0–L4 × 1 rep → revert → 10-min recovery. The telemetry the agent queries is still limited to the fixed window `[start, end]`. Section 3.1 currently says that "the agent analyses windows after they are recorded"; it should describe this order instead.
 2. **The code tool is pinned to the window end.** It only shows commits made before the end of the window, so a later `git revert` of an F5 fault cannot leak into the analysis.
 3. **Window IDs are neutral** (`W001` …). The agent gets only the ID and the time range (`data/labels/windows.jsonl`). Labels stay in `labels.jsonl` and are never passed to the agent.
 4. **Benign commits** (README notes) go into the app repo every 4 windows, so "the last commit is the fault" is not a shortcut at L4.
