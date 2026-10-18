@@ -1,0 +1,40 @@
+{
+  "window_id": "W002",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W002",
+    "start": "2026-10-18T16:25:53Z",
+    "end": "2026-10-18T16:35:53Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-18T16:38:39Z",
+  "latency_s": 5.6,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+    "candidates": [
+      "OUTPUT_BUCKET environment variable of lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "OUTPUT_BUCKET bucket-name reference in the infrastructure-as-code template for CompressionFunction",
+      "Bucket argument of S3.put_object at /var/task/handler.py line 37"
+    ],
+    "explanation": "Every CompressionFunction invocation in the window fails at handler.py line 37 with NoSuchBucket on PutObject to OUTPUT_BUCKET, while other functions run normally. NoSuchBucket means the bucket name resolved at runtime does not exist. It is not AccessDenied, so the execution role is not the cause. The most likely cause is that the OUTPUT_BUCKET environment variable points to a missing or misnamed bucket. The IaC template is the second candidate, since it may define the wrong bucket name or omit the bucket resource. The code is the third candidate because it passes that name through unchanged. The logs alone cannot distinguish these, but the configuration layer is the most direct explanation."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"candidates\": [\"OUTPUT_BUCKET environment variable of lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"OUTPUT_BUCKET bucket-name reference in the infrastructure-as-code template for CompressionFunction\", \"Bucket argument of S3.put_object at /var/task/handler.py line 37\"], \"explanation\": \"Every CompressionFunction invocation in the window fails at handler.py line 37 with NoSuchBucket on PutObject to OUTPUT_BUCKET, while other functions run normally. NoSuchBucket means the bucket name resolved at runtime does not exist. It is not AccessDenied, so the execution role is not the cause. The most likely cause is that the OUTPUT_BUCKET environment variable points to a missing or misnamed bucket. The IaC template is the second candidate, since it may define the wrong bucket name or omit the bucket resource. The code is the third candidate because it passes that name through unchanged. The logs alone cannot distinguish these, but the configuration layer is the most direct explanation.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 836,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 34449,
+    "total_tokens": 35289
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60489
+}

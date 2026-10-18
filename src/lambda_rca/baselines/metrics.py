@@ -68,8 +68,11 @@ def load_or_fetch(path: Path, cw, functions, start_iso: str, end_iso: str) -> pd
         df = pd.read_csv(path, parse_dates=["minute"])
         return df
     df = fetch_metrics(cw, functions, start_iso, end_iso)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=False)
+    # cache only complete windows: CloudWatch needs a few minutes for the last data points
+    from ..io import utcnow
+    if (utcnow() - parse_iso(end_iso)).total_seconds() > 15 * 60:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(path, index=False)
     return df
 
 

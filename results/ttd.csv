@@ -1,0 +1,9 @@
+method,window_id,fault_type,ttd_min
+threshold,W002,F5,1.1166666666666667
+threshold,W005,F3,1.4166666666666667
+threshold,W006,F3,1.4
+iforest,W002,F5,1.1166666666666667
+iforest,W005,F3,1.4166666666666667
+iforest,W006,F3,1.4
+cfn_drift,W005,F3,8.116666666666667
+cfn_drift,W006,F3,8.1

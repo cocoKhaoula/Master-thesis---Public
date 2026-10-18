@@ -1,0 +1,36 @@
+{
+  "window_id": "W001",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W001",
+    "start": "2026-10-18T15:37:42Z",
+    "end": "2026-10-18T15:47:42Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-18T15:54:58Z",
+  "latency_s": 12.11,
+  "answer": {
+    "anomaly": false,
+    "root_cause_layer": "NONE",
+    "function": null,
+    "candidates": [],
+    "explanation": "The visible events show normal behaviour: every invocation has a matching END and REPORT, with no errors, timeouts, throttling or access-denied messages. Durations stay under 700 ms, far below any plausible timeout. Max memory used is 95-110 MB against configured sizes of 256 MB and 1024 MB, so memory is over-provisioned for CompressionFunction and ThumbnailerFunction, but this is consistent across the window and is a cost concern rather than a configuration fault. About 3,800 events are truncated, so the conclusion covers only the visible portion of the window."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": false, \"root_cause_layer\": \"NONE\", \"function\": null, \"candidates\": [], \"explanation\": \"The visible events show normal behaviour: every invocation has a matching END and REPORT, with no errors, timeouts, throttling or access-denied messages. Durations stay under 700 ms, far below any plausible timeout. Max memory used is 95-110 MB against configured sizes of 256 MB and 1024 MB, so memory is over-provisioned for CompressionFunction and ThumbnailerFunction, but this is consistent across the window and is a cost concern rather than a configuration fault. About 3,800 events are truncated, so the conclusion covers only the visible portion of the window.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 577,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 36983,
+    "total_tokens": 37564
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60395
+}

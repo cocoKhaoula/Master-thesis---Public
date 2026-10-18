@@ -1,0 +1,140 @@
+{
+  "taken_at": "2026-10-18T17:11:53Z",
+  "functions": {
+    "crud-api": {
+      "function_name": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+      "memory_size": 256,
+      "timeout": 10,
+      "environment": {
+        "TABLE_NAME": "lambda-rca-bench-CartTable-16124ULMPVK4O"
+      },
+      "reserved_concurrency": null,
+      "role": "lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm",
+      "inline_policies": {
+        "app-policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:Query"
+              ],
+              "Resource": "arn:aws:dynamodb:eu-north-1:708553018645:table/lambda-rca-bench-CartTable-16124ULMPVK4O",
+              "Effect": "Allow",
+              "Sid": "CartTableAccess"
+            }
+          ]
+        }
+      }
+    },
+    "uploader": {
+      "function_name": "lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+      "memory_size": 256,
+      "timeout": 30,
+      "environment": {
+        "OUTPUT_BUCKET": "lambda-rca-bench-outputbucket-sglpryesfryi"
+      },
+      "reserved_concurrency": null,
+      "role": "lambda-rca-bench-UploaderRole-R55h76yRW00a",
+      "inline_policies": {
+        "app-policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Resource": "arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/*",
+              "Effect": "Allow",
+              "Sid": "WriteOutput"
+            },
+            {
+              "Sid": "SilentDriftExtra",
+              "Effect": "Allow",
+              "Action": "s3:ListAllMyBuckets",
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "thumbnailer": {
+      "function_name": "lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+      "memory_size": 1024,
+      "timeout": 30,
+      "environment": {
+        "OUTPUT_BUCKET": "lambda-rca-bench-outputbucket-sglpryesfryi",
+        "INPUT_BUCKET": "lambda-rca-bench-inputbucket-rufhuxrjztbm"
+      },
+      "reserved_concurrency": null,
+      "role": "lambda-rca-bench-ThumbnailerRole-uSLz6w9BZbU1",
+      "inline_policies": {
+        "app-policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Resource": "arn:aws:s3:::lambda-rca-bench-inputbucket-rufhuxrjztbm/*",
+              "Effect": "Allow",
+              "Sid": "ReadInput"
+            },
+            {
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Resource": "arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/*",
+              "Effect": "Allow",
+              "Sid": "WriteOutput"
+            }
+          ]
+        }
+      }
+    },
+    "compression": {
+      "function_name": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "memory_size": 1024,
+      "timeout": 60,
+      "environment": {
+        "OUTPUT_BUCKET": "lambda-rca-bench-outputbucket-sglpryesfryi",
+        "INPUT_BUCKET": "lambda-rca-bench-inputbucket-rufhuxrjztbm"
+      },
+      "reserved_concurrency": null,
+      "role": "lambda-rca-bench-CompressionRole-tNi3wsTWkCVs",
+      "inline_policies": {
+        "app-policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:ListBucket"
+              ],
+              "Resource": "arn:aws:s3:::lambda-rca-bench-inputbucket-rufhuxrjztbm",
+              "Effect": "Allow",
+              "Sid": "ListInput"
+            },
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Resource": "arn:aws:s3:::lambda-rca-bench-inputbucket-rufhuxrjztbm/*",
+              "Effect": "Allow",
+              "Sid": "ReadInput"
+            },
+            {
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Resource": "arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/*",
+              "Effect": "Allow",
+              "Sid": "WriteOutput"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "app_repo_head": "d77424d4b666b7cf95571596a24e07533823536e"
+}

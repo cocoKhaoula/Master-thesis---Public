@@ -1,0 +1,6 @@
+{"method": "threshold", "window_id": "W001", "root_cause_layer": null, "candidates": [], "anomaly": false, "function": null, "detected_at": null}
+{"method": "threshold", "window_id": "W002", "root_cause_layer": null, "candidates": [], "anomaly": true, "function": "compression", "detected_at": "2026-10-18T16:27:00+00:00", "breaches": {"compression": 10, "crud-api": 0, "thumbnailer": 0, "uploader": 0}}
+{"method": "threshold", "window_id": "W003", "root_cause_layer": null, "candidates": [], "anomaly": false, "function": null, "detected_at": null}
+{"method": "threshold", "window_id": "W004", "root_cause_layer": null, "candidates": [], "anomaly": false, "function": null, "detected_at": null}
+{"method": "threshold", "window_id": "W005", "root_cause_layer": null, "candidates": [], "anomaly": true, "function": "compression", "detected_at": "2026-10-18T17:59:00+00:00", "breaches": {"compression": 10, "crud-api": 0, "thumbnailer": 0, "uploader": 0}}
+{"method": "threshold", "window_id": "W006", "root_cause_layer": null, "candidates": [], "anomaly": true, "function": "crud-api", "detected_at": "2026-10-18T18:26:00+00:00", "breaches": {"compression": 0, "crud-api": 10, "thumbnailer": 0, "uploader": 0}}
