@@ -66,6 +66,7 @@ class Campaign:
         if not dry_run:
             s = session(cfg, "harness")
             self.lam, self.iam, self.cfn = s.client("lambda"), s.client("iam"), s.client("cloudformation")
+            self.cw = s.client("cloudwatch")
             self.functions = resolve_functions(cfg, "harness")
 
     # ------------------------------------------------------------------ public
@@ -88,9 +89,13 @@ class Campaign:
                 apprepo.benign_commit(self.cfg.app_repo, n)
             if not self._run_safely(w):
                 failed.append(w)
-        # windows that failed (e.g. network loss) are retried once at the end
-        for w in failed:
-            self._run_safely(w)
+        # windows that failed (network loss, too little load) are repeated at the end
+        for _ in range(3):
+            if not failed:
+                break
+            failed = [w for w in failed if not self._run_safely(w)]
+        if failed:
+            log.error("windows still missing after retries: %s", [w.window_id for w in failed])
 
     def _run_safely(self, w: PlannedWindow) -> bool:
         """Run one window; on failure discard its partial outputs so it can be repeated."""
@@ -112,6 +117,38 @@ class Campaign:
         if wf.exists():
             from ..io import write_jsonl
             write_jsonl(wf, [r for r in read_jsonl(wf) if r["window_id"] != window_id])
+
+    def _invocations_per_minute(self, start, end) -> dict[str, float]:
+        from ..baselines.metrics import fetch_metrics
+        df = fetch_metrics(self.cw, self.functions, iso(start), iso(end))
+        minutes = max((end - start).total_seconds() / 60.0, 1.0)
+        return (df.groupby("function")["invocations"].sum() / minutes).to_dict()
+
+    def _load_ok(self, start, end) -> bool:
+        """True if every function received at least `min_load_fraction` of the configured load
+        (an internet outage on the load-generator machine leaves the functions without traffic,
+        so faults produce no symptoms and the window would be mislabelled)."""
+        expected = self.cfg["load"]["requests_per_minute"]
+        frac = self.cfg["campaign"].get("min_load_fraction", 0.6)
+        rates = self._invocations_per_minute(start, end)
+        low = {k: round(v, 1) for k, v in rates.items() if v < frac * expected}
+        if low:
+            log.warning("load too low between %s and %s: %s invocations/min (expected %d)",
+                        iso(start), iso(end), low, expected)
+        return not low and len(rates) == len(self.functions)
+
+    def _wait_for_load(self, max_hours: float = 12) -> None:
+        """Before a window: wait until the last 4 minutes show normal load on all functions."""
+        deadline = time.time() + max_hours * 3600
+        while time.time() < deadline:
+            end = utcnow() - timedelta(minutes=2)  # CloudWatch metrics arrive with a delay
+            try:
+                if self._load_ok(end - timedelta(minutes=4), end):
+                    return
+            except Exception:
+                log.warning("load check failed", exc_info=True)
+            time.sleep(60)
+        raise RuntimeError("load did not return to normal")
 
     def _wait_for_aws(self, max_minutes: int = 120) -> None:
         """Block until AWS is reachable again (e.g. after the network dropped)."""
@@ -149,6 +186,8 @@ class Campaign:
 
         fault, injection = None, None
         snapshots_dir = self.cfg.path("snapshots_dir")
+        self._wait_for_aws()
+        self._wait_for_load()
         try:
             if w.fault_type != "N":
                 fn = self.functions[w.function]
@@ -165,6 +204,10 @@ class Campaign:
                        {"window_id": w.window_id, **(drift or {"error": "failed"})})
 
             self._sleep_until(end)
+            # metrics of the last minute arrive with a delay
+            self._sleep_until(end + timedelta(minutes=2))
+            if not self._load_ok(start, end):
+                raise RuntimeError(f"window {w.window_id}: load too low during the window, window is invalid")
             snap = self._safe(lambda: take_snapshot(self.cfg, self.lam, self.iam, self.functions), "snapshot")
             write_json(snapshots_dir / f"{w.window_id}.json", snap)
 

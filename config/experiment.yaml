@@ -74,6 +74,7 @@ campaign:
   # "hold": the agent runs (and drift detection is captured) right after the window
   # while the fault is still active, then the fault is reverted. Required because IAM
   # and live-configuration tools read the *current* AWS state (see README, "Design notes").
+  min_load_fraction: 0.6           # a window is invalid (and repeated) if any function got less load
   analysis_mode: hold
   drift_check_offset_minutes: 8    # when CloudFormation drift detection runs inside a window
   noise_commits_every: 4           # benign commits in the app repo every N windows (0 = off)
