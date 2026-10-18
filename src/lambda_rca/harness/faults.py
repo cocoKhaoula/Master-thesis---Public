@@ -184,7 +184,12 @@ class FaultyCommit(Fault):
         new = edit_template_env_var(template, fn_cfg["logical_id"], var, bad)
         msg = cfg["faults"]["F5"]["commit_message"].format(env_var=var, function=self.ctx.fn.key)
         sha = apprepo.commit_file(repo, tpl_name, new, msg)
-        apprepo.sam_deploy(cfg)
+        try:
+            apprepo.sam_deploy(cfg)
+        except Exception:
+            # not deployed: remove the commit again so the repository matches AWS
+            apprepo.drop_last_commit(repo, sha)
+            raise
         self._wait_updated()
         return Injection(
             subtype="committed", root_cause_layer="IAC",

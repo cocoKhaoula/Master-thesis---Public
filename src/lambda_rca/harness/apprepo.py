@@ -71,14 +71,42 @@ def benign_commit(repo: Path, n: int) -> str:
     return head(repo)
 
 
+def _sam_env() -> dict:
+    """SAM builds Python functions with a local interpreter of the same version as the
+    runtime (python3.12) and needs the SAM and AWS CLIs; background processes may start
+    without them on PATH."""
+    import os
+    import shutil
+    env = dict(os.environ)
+    extra = []
+    if not shutil.which("python3.12"):
+        for d in [os.path.expandvars(r"%LOCALAPPDATA%\Programs\Python\Python312"), r"C:\Python312"]:
+            if os.path.exists(os.path.join(d, "python.exe")):
+                extra.append(d)
+                break
+    for d in [r"C:\Program Files\Amazon\AWSSAMCLI\bin", r"C:\Program Files\Amazon\AWSCLIV2"]:
+        if os.path.isdir(d):
+            extra.append(d)
+    env["PATH"] = os.pathsep.join(extra + [env.get("PATH", "")])
+    env["SAM_CLI_TELEMETRY"] = "0"
+    return env
+
+
 def sam_deploy(cfg: Config) -> None:
     """Build and deploy the working repository with the harness profile."""
     repo = cfg.app_repo
+    env = _sam_env()
     common = ["--region", cfg.region, "--profile", cfg["aws"]["harness_profile"]]
-    subprocess.run(["sam", "build", "--cached"], cwd=repo, check=True, shell=_shell())
+    subprocess.run(["sam", "build", "--cached"], cwd=repo, check=True, shell=_shell(), env=env)
     subprocess.run(["sam", "deploy", "--stack-name", cfg.stack_name, "--capabilities", "CAPABILITY_IAM",
                     "--resolve-s3", "--no-confirm-changeset", "--no-fail-on-empty-changeset", *common],
-                   cwd=repo, check=True, shell=_shell())
+                   cwd=repo, check=True, shell=_shell(), env=env)
+
+
+def drop_last_commit(repo: Path, commit: str) -> None:
+    """Remove a commit that was never deployed (used when a deployment fails)."""
+    if head(repo) == commit:
+        _git(repo, "reset", "--hard", f"{commit}~1")
 
 
 def _shell() -> bool:

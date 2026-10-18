@@ -52,9 +52,17 @@ def detect_drift(cfn, stack_name: str, timeout_s: int = 300) -> dict[str, Any]:
         time.sleep(5)
 
     drifts = []
-    paginator = cfn.get_paginator("describe_stack_resource_drifts")
-    for page in paginator.paginate(StackName=stack_name,
-                                   StackResourceDriftStatusFilters=["MODIFIED", "DELETED"]):
+    pages, token = [], None
+    while True:  # describe_stack_resource_drifts has no boto3 paginator
+        kwargs = {"StackName": stack_name, "StackResourceDriftStatusFilters": ["MODIFIED", "DELETED"]}
+        if token:
+            kwargs["NextToken"] = token
+        page = cfn.describe_stack_resource_drifts(**kwargs)
+        pages.append(page)
+        token = page.get("NextToken")
+        if not token:
+            break
+    for page in pages:
         for d in page["StackResourceDrifts"]:
             drifts.append({
                 "logical_id": d["LogicalResourceId"],
