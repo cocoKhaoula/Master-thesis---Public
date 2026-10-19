@@ -1,0 +1,23 @@
+{
+  "window_id": "W026",
+  "started": "2026-10-19T02:59:10Z",
+  "finished": "2026-10-19T02:59:16Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "ThumbnailerRole",
+      "physical_id": "lambda-rca-bench-ThumbnailerRole-uSLz6w9BZbU1",
+      "resource_type": "AWS::IAM::Role",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/Policies/0/PolicyDocument",
+          "expected": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"ReadInput\",\"Effect\":\"Allow\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::lambda-rca-bench-inputbucket-rufhuxrjztbm/*\"},{\"Sid\":\"WriteOutput\",\"Effect\":\"Allow\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/*\"}]}",
+          "actual": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"ReadInput\",\"Effect\":\"Allow\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::lambda-rca-bench-inputbucket-rufhuxrjztbm/*\"},{\"Sid\":\"WriteOutput\",\"Effect\":\"Allow\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/*\"},{\"Sid\":\"SilentDriftExtra\",\"Effect\":\"Allow\",\"Action\":\"s3:ListAllMyBuckets\",\"Resource\":\"*\"}]}",
+          "type": "NOT_EQUAL"
+        }
+      ]
+    }
+  ]
+}

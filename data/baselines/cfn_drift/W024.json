@@ -1,0 +1,23 @@
+{
+  "window_id": "W024",
+  "started": "2026-10-19T02:10:12Z",
+  "finished": "2026-10-19T02:10:18Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "ThumbnailerFunction",
+      "physical_id": "lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+      "resource_type": "AWS::Lambda::Function",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/Environment/Variables/OUTPUT_BUCKET",
+          "expected": "lambda-rca-bench-outputbucket-sglpryesfryi",
+          "actual": "missing-bucket-lambda-rca",
+          "type": "NOT_EQUAL"
+        }
+      ]
+    }
+  ]
+}

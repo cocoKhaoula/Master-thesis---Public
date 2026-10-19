@@ -1,0 +1,36 @@
+{
+  "window_id": "W014",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W014",
+    "start": "2026-10-18T21:48:32Z",
+    "end": "2026-10-18T21:58:32Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-18T22:00:53Z",
+  "latency_s": 3.38,
+  "answer": {
+    "anomaly": false,
+    "root_cause_layer": "NONE",
+    "function": null,
+    "candidates": [],
+    "explanation": "In the visible log events, all four functions complete normally with no errors, timeouts or throttling. Max Memory Used stays well under the configured size (CrudApi 96 MB of 256 MB, Uploader about 100-101 MB of 256 MB, Thumbnailer 110 MB of 1024 MB, Compression 119 MB of 1024 MB). Durations are steady and show no drift, and the Compression function's runs are consistent with its 1024 MB setting. The visible portion does not show a configuration anomaly. Roughly 4,300 events were truncated, so this conclusion covers only the visible portion of the window."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": false, \"root_cause_layer\": \"NONE\", \"function\": null, \"candidates\": [], \"explanation\": \"In the visible log events, all four functions complete normally with no errors, timeouts or throttling. Max Memory Used stays well under the configured size (CrudApi 96 MB of 256 MB, Uploader about 100-101 MB of 256 MB, Thumbnailer 110 MB of 1024 MB, Compression 119 MB of 1024 MB). Durations are steady and show no drift, and the Compression function's runs are consistent with its 1024 MB setting. The visible portion does not show a configuration anomaly. Roughly 4,300 events were truncated, so this conclusion covers only the visible portion of the window.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 411,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 37007,
+    "total_tokens": 37422
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60423
+}
