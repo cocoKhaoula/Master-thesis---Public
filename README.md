@@ -25,7 +25,7 @@ src/lambda_rca/
     apprepo.py            The app's own git repo + `sam deploy` (committed faults, F5)
     loadgen.py            Constant-rate load generator, seed inputs
   agent/                  LLM agent (Chapter 3)
-    runner.py             Strands Agents + Claude on Bedrock, MCP servers per level, token logging
+    runner.py             Strands Agents + Claude Haiku 5.5 (Anthropic API), MCP servers per level, token logging
     prompt.py             Prompt (Appendix B)
     schema.py             Output JSON schema and parsing (Appendix C)
     rawlogs.py            Raw logs for L0

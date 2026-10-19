@@ -1,7 +1,8 @@
 """Agent runner: one ReAct agent run per (window, ablation level, repetition).
 
-The agent is a Strands Agents `Agent` with a Claude model on Amazon Bedrock at
-temperature 0 (Section 2.4). The tools are the MCP servers and custom tools of the
+The agent is a Strands Agents `Agent` with the model set in config/experiment.yaml
+(Claude Haiku 5.5 through the Anthropic API in the experiment; Amazon Bedrock is also
+supported) and the model's default sampling (Section 2.4). The tools are the MCP servers and custom tools of the
 ablation level (config/ablation_levels.yaml); nothing else differs between levels.
 For every run the JSON answer, the tool-call sequence, the token usage and the latency
 are stored (requirements R5, R6) in data/runs/<level>/<window_id>_r<rep>.json.
