@@ -1,0 +1,40 @@
+{
+  "window_id": "W040",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W040",
+    "start": "2026-10-21T00:25:01Z",
+    "end": "2026-10-21T00:35:01Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-21T00:37:13Z",
+  "latency_s": 5.41,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+    "candidates": [
+      "MemorySize=128 MB on lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "Timeout=3s on lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "IaC template resource for CompressionFunction (MemorySize/Timeout values)"
+    ],
+    "explanation": "CompressionFunction is the only function that fails in this window: most invocations report Duration 3000.00 ms with Status: timeout, and its Init Duration is often 400-700 ms. Its peak memory (about 91-98 MB) stays under the 128 MB limit, so this is not an out-of-memory failure. The other three functions run in roughly 25-240 ms at 256 or 1024 MB. The consistent 3-second cutoff, together with a 128 MB allocation that gives the function little CPU, points to the live memory and timeout settings as the cause. The IaC template is listed as a candidate because it may define those same values."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"candidates\": [\"MemorySize=128 MB on lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"Timeout=3s on lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"IaC template resource for CompressionFunction (MemorySize/Timeout values)\"], \"explanation\": \"CompressionFunction is the only function that fails in this window: most invocations report Duration 3000.00 ms with Status: timeout, and its Init Duration is often 400-700 ms. Its peak memory (about 91-98 MB) stays under the 128 MB limit, so this is not an out-of-memory failure. The other three functions run in roughly 25-240 ms at 256 or 1024 MB. The consistent 3-second cutoff, together with a 128 MB allocation that gives the function little CPU, points to the live memory and timeout settings as the cause. The IaC template is listed as a candidate because it may define those same values.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 849,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 36971,
+    "total_tokens": 37824
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60469
+}

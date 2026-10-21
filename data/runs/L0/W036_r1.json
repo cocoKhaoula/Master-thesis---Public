@@ -1,0 +1,40 @@
+{
+  "window_id": "W036",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W036",
+    "start": "2026-10-20T22:45:27Z",
+    "end": "2026-10-20T22:55:27Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-20T22:57:41Z",
+  "latency_s": 6.26,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "IAM",
+    "function": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+    "candidates": [
+      "dynamodb:PutItem",
+      "lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm policy (missing dynamodb:PutItem grant)",
+      "arn:aws:dynamodb:eu-north-1:708553018645:table/missing-table"
+    ],
+    "explanation": "Every CrudApiFunction invocation in the window fails with AccessDeniedException on dynamodb:PutItem against table/missing-table. The error states that no identity-based policy allows the action, so the execution role lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm lacks the grant. The other functions show no errors, so the fault is isolated to CrudApi's role. The table name 'missing-table' also suggests the target resource may be misconfigured, but the explicit denial points to the IAM layer."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"IAM\", \"function\": \"lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ\", \"candidates\": [\"dynamodb:PutItem\", \"lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm policy (missing dynamodb:PutItem grant)\", \"arn:aws:dynamodb:eu-north-1:708553018645:table/missing-table\"], \"explanation\": \"Every CrudApiFunction invocation in the window fails with AccessDeniedException on dynamodb:PutItem against table/missing-table. The error states that no identity-based policy allows the action, so the execution role lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm lacks the grant. The other functions show no errors, so the fault is isolated to CrudApi's role. The table name 'missing-table' also suggests the target resource may be misconfigured, but the explicit denial points to the IAM layer.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 940,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 32848,
+    "total_tokens": 33792
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60409
+}

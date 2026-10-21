@@ -1,0 +1,303 @@
+{
+  "window_id": "W032",
+  "level": "L1",
+  "repetition": 1,
+  "window": {
+    "window_id": "W032",
+    "start": "2026-10-20T21:06:13Z",
+    "end": "2026-10-20T21:16:13Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-20T21:18:21Z",
+  "latency_s": 81.87,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+    "candidates": [
+      "ReservedConcurrentExecutions (lambda-rca-bench-CompressionFunction-kTL7GSn74As8)"
+    ],
+    "explanation": "CompressionFunction was throttled on roughly 15 to 33 requests per minute for the full 10-minute window (Throttles metric, 21:06 to 21:16 UTC). Its ConcurrentExecutions maximum stayed at 1 in every minute after the first, and it was running about 27 to 34 invocations per minute, each taking about 0.54 s. That is far below what the function needs, so a concurrency cap of 1 is the likely cause, most plausibly a reserved-concurrency setting. The other three functions show zero errors and zero throttles, and no errors or timeouts appear in their logs. The CompressionFunction logs show no errors, so the throttled requests are rejected before the function runs. I could not read the function's configuration or its IaC template with the tools available, so the reserved-concurrency value and its IaC origin are inferred from the metrics, not confirmed."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "```json\n{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"candidates\": [\"ReservedConcurrentExecutions (lambda-rca-bench-CompressionFunction-kTL7GSn74As8)\"], \"explanation\": \"CompressionFunction was throttled on roughly 15 to 33 requests per minute for the full 10-minute window (Throttles metric, 21:06 to 21:16 UTC). Its ConcurrentExecutions maximum stayed at 1 in every minute after the first, and it was running about 27 to 34 invocations per minute, each taking about 0.54 s. That is far below what the function needs, so a concurrency cap of 1 is the likely cause, most plausibly a reserved-concurrency setting. The other three functions show zero errors and zero throttles, and no errors or timeouts appear in their logs. The CompressionFunction logs show no errors, so the throttled requests are rejected before the function runs. I could not read the function's configuration or its IaC template with the tools available, so the reserved-concurrency value and its IaC origin are inferred from the metrics, not confirmed.\"}\n```\n",
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 4600,
+    "cache_read_input_tokens": 255361,
+    "cache_write_input_tokens": 83408,
+    "total_tokens": 343381
+  },
+  "tools_available": [
+    "analyze_log_group",
+    "analyze_metric",
+    "cancel_logs_insight_query",
+    "describe_log_groups",
+    "execute_cwl_insights_batch",
+    "execute_log_insights_query",
+    "execute_promql_query",
+    "execute_promql_range_query",
+    "get_active_alarms",
+    "get_alarm_history",
+    "get_logs_insight_query_results",
+    "get_metric_data",
+    "get_metric_metadata",
+    "get_promql_label_values",
+    "get_promql_labels",
+    "get_promql_series",
+    "get_recommended_metric_alarms",
+    "recommend_indexes_account",
+    "recommend_indexes_loggroup"
+  ],
+  "tool_calls": [
+    {
+      "id": "toolu_01EK3bpJ8btYNa2n4y7onmK8",
+      "name": "execute_cwl_insights_batch",
+      "input": {
+        "log_group_names": [
+          "/aws/lambda/lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+          "/aws/lambda/lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+          "/aws/lambda/lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+          "/aws/lambda/lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+        ],
+        "regions": [
+          "eu-north-1"
+        ],
+        "start_time": "2026-10-20T21:06:13Z",
+        "end_time": "2026-10-20T21:16:13Z",
+        "query_string": "filter @message like /(?i)(error|exception|denied|timeout|task timed out|memory|fail)/ | fields @timestamp, @logStream, @message | sort @timestamp asc | limit 100"
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"summary\": {\n    \"total_log_groups\": 4,\n    \"total_regions\": 1,\n    \"total_chunks\": 1,\n    \"successful_chunks\": 1,\n    \"retried_chunks\": 0,\n    \"re_chunked\": 0,\n    \"failed_chunks\": 0,\n    \"total_records_returned\": 100,\n    \"warnings\": []\n  },\n  \"results\": [\n    {\n      \"@timestamp\": \"2026-10-20 21:06:13.522\",\n      \"@logStream\": \"2026/10/20/[$LATEST]7a6c3e97f36c41bbb60ac9b8ee3bab5d\",\n      \"@message\": \"REPORT RequestId: 385bfe29-d92a-4dde-9fa7-b505a0662663\\tDuration: 525.76 ms\\tBilled Durat",
+        "chars": 67069
+      }
+    },
+    {
+      "id": "toolu_012xLXbNZaTYKKaBFpz4oyP7",
+      "name": "execute_cwl_insights_batch",
+      "input": {
+        "log_group_names": [
+          "/aws/lambda/lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+          "/aws/lambda/lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+          "/aws/lambda/lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+          "/aws/lambda/lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+        ],
+        "regions": [
+          "eu-north-1"
+        ],
+        "start_time": "2026-10-20T21:06:13Z",
+        "end_time": "2026-10-20T21:16:13Z",
+        "query_string": "filter @message like /(?i)(error|exception|denied|task timed out|Runtime\\.|fail|unauthorized|AccessDenied|not authorized|throttl)/ | fields @timestamp, @logStream, @message | sort @timestamp asc | limit 50"
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"summary\": {\n    \"total_log_groups\": 4,\n    \"total_regions\": 1,\n    \"total_chunks\": 1,\n    \"successful_chunks\": 1,\n    \"retried_chunks\": 0,\n    \"re_chunked\": 0,\n    \"failed_chunks\": 0,\n    \"total_records_returned\": 0,\n    \"warnings\": []\n  },\n  \"results\": []\n}",
+        "chars": 263
+      }
+    },
+    {
+      "id": "toolu_01RQAfFqW4kzJXg1wLUhxwrX",
+      "name": "execute_cwl_insights_batch",
+      "input": {
+        "log_group_names": [
+          "/aws/lambda/lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+          "/aws/lambda/lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+          "/aws/lambda/lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+          "/aws/lambda/lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+        ],
+        "regions": [
+          "eu-north-1"
+        ],
+        "start_time": "2026-10-20T21:06:13Z",
+        "end_time": "2026-10-20T21:16:13Z",
+        "query_string": "filter @type = \"REPORT\" | stats count(*) as invocations, avg(@duration) as avgDur, max(@duration) as maxDur, max(@maxMemoryUsed/1000000) as maxMemMB, max(@memorySize/1000000) as memSizeMB by @log | sort @log asc"
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"summary\": {\n    \"total_log_groups\": 4,\n    \"total_regions\": 1,\n    \"total_chunks\": 1,\n    \"successful_chunks\": 1,\n    \"retried_chunks\": 0,\n    \"re_chunked\": 0,\n    \"failed_chunks\": 0,\n    \"total_records_returned\": 4,\n    \"warnings\": []\n  },\n  \"results\": [\n    {\n      \"@log\": \"708553018645:/aws/lambda/lambda-rca-bench-CompressionFunction-kTL7GSn74As8\",\n      \"invocations\": \"294\",\n      \"avgDur\": \"542.1656\",\n      \"maxDur\": \"707.79\",\n      \"maxMemMB\": \"102\",\n      \"memSizeMB\": \"1024\",\n      \"",
+        "chars": 1472
+      }
+    },
+    {
+      "id": "toolu_01YN1j51ks6ZoDN7DHD3Zd4X",
+      "name": "execute_cwl_insights_batch",
+      "input": {
+        "log_group_names": [
+          "/aws/lambda/lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+          "/aws/lambda/lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+          "/aws/lambda/lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+          "/aws/lambda/lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+        ],
+        "regions": [
+          "eu-north-1"
+        ],
+        "start_time": "2026-10-20T21:06:13Z",
+        "end_time": "2026-10-20T21:16:13Z",
+        "query_string": "filter @message not like /^REPORT/ and @message not like /^START/ and @message not like /^END/ | fields @log, @timestamp, @message | sort @timestamp asc | limit 60"
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"summary\": {\n    \"total_log_groups\": 4,\n    \"total_regions\": 1,\n    \"total_chunks\": 1,\n    \"successful_chunks\": 1,\n    \"retried_chunks\": 0,\n    \"re_chunked\": 0,\n    \"failed_chunks\": 0,\n    \"total_records_returned\": 2,\n    \"warnings\": []\n  },\n  \"results\": [\n    {\n      \"@log\": \"708553018645:/aws/lambda/lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\",\n      \"@timestamp\": \"2026-10-20 21:08:09.006\",\n      \"@message\": \"INIT_START Runtime Version: python:3.12.mainlinev2.v43\\tRuntime Version ARN: a",
+        "chars": 1683
+      }
+    },
+    {
+      "id": "toolu_01E89o2hmiZz4Vtja68Bxiuf",
+      "name": "get_metric_data",
+      "input": {
+        "queries": [
+          {
+            "id": "ce",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "Errors",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+                }
+              ],
+              "statistic": "Sum"
+            },
+            "period": 60
+          },
+          {
+            "id": "te",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "Throttles",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+                }
+              ],
+              "statistic": "Sum"
+            },
+            "period": 60
+          },
+          {
+            "id": "ca",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "Errors",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ"
+                }
+              ],
+              "statistic": "Sum"
+            },
+            "period": 60
+          },
+          {
+            "id": "ua",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "Errors",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-UploaderFunction-f4370rn3xmWQ"
+                }
+              ],
+              "statistic": "Sum"
+            },
+            "period": 60
+          },
+          {
+            "id": "ta",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "Errors",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB"
+                }
+              ],
+              "statistic": "Sum"
+            },
+            "period": 60
+          }
+        ],
+        "start_time": "2026-10-20T21:06:13Z",
+        "end_time": "2026-10-20T21:16:13Z",
+        "region": "eu-north-1"
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"metricDataResults\": [\n    {\n      \"id\": \"ce\",\n      \"label\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8 Errors\",\n      \"statusCode\": \"Complete\",\n      \"datapoints\": [\n        {\n          \"timestamp\": \"2026-10-20T23:06:00+02:00\",\n          \"value\": 0.0\n        },\n        {\n          \"timestamp\": \"2026-10-20T23:07:00+02:00\",\n          \"value\": 0.0\n        },\n        {\n          \"timestamp\": \"2026-10-20T23:08:00+02:00\",\n          \"value\": 0.0\n        },\n        {\n          \"timestamp\":",
+        "chars": 5800
+      }
+    },
+    {
+      "id": "toolu_01G5jdG87nB8NGUbZkWvcYWG",
+      "name": "get_metric_data",
+      "input": {
+        "queries": [
+          {
+            "id": "inv",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "Invocations",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+                }
+              ],
+              "statistic": "Sum"
+            },
+            "period": 60
+          },
+          {
+            "id": "cc",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "ConcurrentExecutions",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+                }
+              ],
+              "statistic": "Maximum"
+            },
+            "period": 60
+          },
+          {
+            "id": "th",
+            "metric_stat": {
+              "namespace": "AWS/Lambda",
+              "metric_name": "Throttles",
+              "dimensions": [
+                {
+                  "name": "FunctionName",
+                  "value": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8"
+                }
+              ],
+              "statistic": "Sum"
+            },
+            "period": 60
+          }
+        ],
+        "start_time": "2026-10-20T21:06:13Z",
+        "end_time": "2026-10-20T21:16:13Z",
+        "region": "eu-north-1"
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"metricDataResults\": [\n    {\n      \"id\": \"inv\",\n      \"label\": \"Invocations\",\n      \"statusCode\": \"Complete\",\n      \"datapoints\": [\n        {\n          \"timestamp\": \"2026-10-20T23:06:00+02:00\",\n          \"value\": 34.0\n        },\n        {\n          \"timestamp\": \"2026-10-20T23:07:00+02:00\",\n          \"value\": 31.0\n        },\n        {\n          \"timestamp\": \"2026-10-20T23:08:00+02:00\",\n          \"value\": 33.0\n        },\n        {\n          \"timestamp\": \"2026-10-20T23:09:00+02:00\",\n          \"",
+        "chars": 3389
+      }
+    }
+  ],
+  "prompt_chars": 385
+}

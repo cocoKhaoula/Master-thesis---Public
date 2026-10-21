@@ -1,0 +1,36 @@
+{
+  "window_id": "W030",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W030",
+    "start": "2026-10-20T20:17:12Z",
+    "end": "2026-10-20T20:27:12Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-20T20:29:27Z",
+  "latency_s": 5.11,
+  "answer": {
+    "anomaly": false,
+    "root_cause_layer": "NONE",
+    "function": null,
+    "candidates": [],
+    "explanation": "The visible events show no errors, timeouts, throttles or access-denied messages. Every invocation that reports completes with Duration well below the function timeout, and Max Memory Used stays under the configured memory size (Compression and Thumbnailer 1024 MB peak around 103-112 MB; Crud and Uploader 256 MB peak around 95-101 MB). The one INIT_START on CrudApiFunction is an ordinary cold start (Init Duration 465 ms, billed 634 ms), not a fault. About 4,309 events were truncated, so the window is not fully covered, but nothing in the visible data points to a configuration anomaly."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": false, \"root_cause_layer\": \"NONE\", \"function\": null, \"candidates\": [], \"explanation\": \"The visible events show no errors, timeouts, throttles or access-denied messages. Every invocation that reports completes with Duration well below the function timeout, and Max Memory Used stays under the configured memory size (Compression and Thumbnailer 1024 MB peak around 103-112 MB; Crud and Uploader 256 MB peak around 95-101 MB). The one INIT_START on CrudApiFunction is an ordinary cold start (Init Duration 465 ms, billed 634 ms), not a fault. About 4,309 events were truncated, so the window is not fully covered, but nothing in the visible data points to a configuration anomaly.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 663,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 36969,
+    "total_tokens": 37636
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60322
+}
