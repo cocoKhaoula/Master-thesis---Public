@@ -71,6 +71,8 @@ class Campaign:
 
     # ------------------------------------------------------------------ public
     def run(self, only: list[str] | None = None, limit: int | None = None) -> None:
+        if not self.dry_run:
+            self._clean_after_interruption()
         done = {r["incident_id"] for r in read_jsonl(self.cfg.path("labels_file"))}
         plan = [w for w in plan_windows(self.cfg) if w.window_id not in done]
         if only:
@@ -107,6 +109,22 @@ class Campaign:
             self._discard(w.window_id)
             self._wait_for_aws()
             return False
+
+    def _clean_after_interruption(self) -> None:
+        """After a crash or a killed process: revert a fault that is still active and discard
+        the outputs of windows that were started but never labelled, so they are repeated."""
+        if self.state_file.exists():
+            log.warning("a fault from an interrupted run is still active; reverting it")
+            self._retry(self.recover, "recover after interruption")
+        import glob
+        import os
+        labelled = {r["incident_id"] for r in read_jsonl(self.cfg.path("labels_file"))}
+        started = {w["window_id"] for w in read_jsonl(self.cfg.path("windows_file"))}
+        started |= {os.path.basename(f).split("_")[0]
+                    for f in glob.glob(str(self.cfg.path("runs_dir") / "L*" / "W*.json"))}
+        for wid in sorted(started - labelled):
+            log.warning("discarding unfinished window %s from an interrupted run", wid)
+            self._discard(wid)
 
     def _discard(self, window_id: str) -> None:
         for f in self.cfg.path("runs_dir").glob(f"L*/{window_id}_*.json"):
