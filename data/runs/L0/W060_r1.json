@@ -1,0 +1,40 @@
+{
+  "window_id": "W060",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W060",
+    "start": "2026-10-21T22:52:19Z",
+    "end": "2026-10-21T23:02:19Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-21T23:04:32Z",
+  "latency_s": 6.69,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+    "candidates": [
+      "Timeout (3 s) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "MemorySize (128 MB) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "Timeout/MemorySize properties of CompressionFunction in the IaC template"
+    ],
+    "explanation": "Nearly every CompressionFunction invocation in the window ends with Status: timeout at exactly 3000.00 ms. The other functions complete in roughly 25-240 ms, so the fault is specific to this function. Max Memory Used stays around 93-98 MB, so this is not memory exhaustion. The likely cause is that the 3 s timeout and 128 MB memory setting are too small for the compression workload, since Lambda allocates CPU in proportion to memory. Init Duration of about 380-490 ms on cold starts adds to the pressure. The log excerpt was truncated and no tools were available, so I could not confirm the change history or IAM denials; the CONFIG attribution rests on the log evidence alone."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"candidates\": [\"Timeout (3 s) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"MemorySize (128 MB) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"Timeout/MemorySize properties of CompressionFunction in the IaC template\"], \"explanation\": \"Nearly every CompressionFunction invocation in the window ends with Status: timeout at exactly 3000.00 ms. The other functions complete in roughly 25-240 ms, so the fault is specific to this function. Max Memory Used stays around 93-98 MB, so this is not memory exhaustion. The likely cause is that the 3 s timeout and 128 MB memory setting are too small for the compression workload, since Lambda allocates CPU in proportion to memory. Init Duration of about 380-490 ms on cold starts adds to the pressure. The log excerpt was truncated and no tools were available, so I could not confirm the change history or IAM denials; the CONFIG attribution rests on the log evidence alone.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 1046,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 36862,
+    "total_tokens": 37912
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60449
+}

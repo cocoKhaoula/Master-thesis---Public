@@ -1,0 +1,40 @@
+{
+  "window_id": "W072",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W072",
+    "start": "2026-10-22T03:51:55Z",
+    "end": "2026-10-22T04:01:55Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-22T04:04:16Z",
+  "latency_s": 5.29,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+    "candidates": [
+      "OUTPUT_BUCKET environment variable on lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+      "S3 bucket name referenced by OUTPUT_BUCKET in the IaC template (intended bucket resource or parameter)",
+      "s3:PutObject call at handler.py line 29"
+    ],
+    "explanation": "Every UploaderFunction invocation in the window fails with NoSuchBucket on S3 PutObject to OUTPUT_BUCKET, while CrudApi, Thumbnailer and Compression run without errors. The failure is deterministic and tied to the bucket reference, not to the code path or to IAM, since the bucket is reported as nonexistent rather than access denied. The most likely cause is that the OUTPUT_BUCKET environment variable on the live function points to a bucket that does not exist. I could not verify the variable's value or the template, so the IaC template and the handler call are listed as secondary candidates to check."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\", \"candidates\": [\"OUTPUT_BUCKET environment variable on lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\", \"S3 bucket name referenced by OUTPUT_BUCKET in the IaC template (intended bucket resource or parameter)\", \"s3:PutObject call at handler.py line 29\"], \"explanation\": \"Every UploaderFunction invocation in the window fails with NoSuchBucket on S3 PutObject to OUTPUT_BUCKET, while CrudApi, Thumbnailer and Compression run without errors. The failure is deterministic and tied to the bucket reference, not to the code path or to IAM, since the bucket is reported as nonexistent rather than access denied. The most likely cause is that the OUTPUT_BUCKET environment variable on the live function points to a bucket that does not exist. I could not verify the variable's value or the template, so the IaC template and the handler call are listed as secondary candidates to check.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 884,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 33693,
+    "total_tokens": 34581
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60494
+}

@@ -1,0 +1,40 @@
+{
+  "window_id": "W055",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W055",
+    "start": "2026-10-21T21:11:32Z",
+    "end": "2026-10-21T21:21:32Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-21T21:23:43Z",
+  "latency_s": 88.92,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+    "candidates": [
+      "Timeout (3 s) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "MemorySize (128 MB) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "Timeout and MemorySize properties of CompressionFunction in the IaC template"
+    ],
+    "explanation": "CompressionFunction is the only function with a failure pattern: most of its invocations in the window end with Status: timeout at exactly 3000.00 ms, and it is billed for the full 3 s. Its Max Memory Used stays at 95-98 MB against a 128 MB allocation, so memory exhaustion is not the cause. The other functions, at 256 MB or 1024 MB, complete in roughly 15-200 ms with no timeouts. The 128 MB setting gives the function a small CPU share, and the 3 s timeout leaves little headroom for its work plus cold-start initialisation (Init Duration of about 400-500 ms in several timed-out invocations). Together these point to an undersized live configuration rather than a permission or code fault. No AccessDenied errors appear in the visible logs, so IAM is not indicated. I did not have the IaC template or change history to confirm whether the values were deployed as intended."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"candidates\": [\"Timeout (3 s) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"MemorySize (128 MB) on lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"Timeout and MemorySize properties of CompressionFunction in the IaC template\"], \"explanation\": \"CompressionFunction is the only function with a failure pattern: most of its invocations in the window end with Status: timeout at exactly 3000.00 ms, and it is billed for the full 3 s. Its Max Memory Used stays at 95-98 MB against a 128 MB allocation, so memory exhaustion is not the cause. The other functions, at 256 MB or 1024 MB, complete in roughly 15-200 ms with no timeouts. The 128 MB setting gives the function a small CPU share, and the 3 s timeout leaves little headroom for its work plus cold-start initialisation (Init Duration of about 400-500 ms in several timed-out invocations). Together these point to an undersized live configuration rather than a permission or code fault. No AccessDenied errors appear in the visible logs, so IAM is not indicated. I did not have the IaC template or change history to confirm whether the values were deployed as intended.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 1185,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 37084,
+    "total_tokens": 38273
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60485
+}

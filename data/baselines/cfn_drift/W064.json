@@ -1,0 +1,23 @@
+{
+  "window_id": "W064",
+  "started": "2026-10-22T00:41:51Z",
+  "finished": "2026-10-22T00:41:57Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "CrudApiRole",
+      "physical_id": "lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm",
+      "resource_type": "AWS::IAM::Role",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/Policies/0/PolicyDocument",
+          "expected": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"CartTableAccess\",\"Effect\":\"Allow\",\"Action\":[\"dynamodb:PutItem\",\"dynamodb:GetItem\",\"dynamodb:Query\"],\"Resource\":\"arn:aws:dynamodb:eu-north-1:708553018645:table/lambda-rca-bench-CartTable-16124ULMPVK4O\"}]}",
+          "actual": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"CartTableAccess\",\"Effect\":\"Allow\",\"Action\":[\"dynamodb:PutItem\",\"dynamodb:GetItem\",\"dynamodb:Query\"],\"Resource\":\"arn:aws:dynamodb:eu-north-1:708553018645:table/lambda-rca-bench-CartTable-16124ULMPVK4O\"},{\"Sid\":\"SilentDriftExtra\",\"Effect\":\"Allow\",\"Action\":\"s3:ListAllMyBuckets\",\"Resource\":\"*\"}]}",
+          "type": "NOT_EQUAL"
+        }
+      ]
+    }
+  ]
+}

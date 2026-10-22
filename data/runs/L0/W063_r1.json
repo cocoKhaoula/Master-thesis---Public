@@ -1,0 +1,40 @@
+{
+  "window_id": "W063",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W063",
+    "start": "2026-10-22T00:08:55Z",
+    "end": "2026-10-22T00:18:55Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-22T00:21:18Z",
+  "latency_s": 4.36,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "IAM",
+    "function": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+    "candidates": [
+      "s3:PutObject",
+      "lambda-rca-bench-CompressionRole-tNi3wsTWkCVs",
+      "arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/compression/*"
+    ],
+    "explanation": "Within the window, CompressionFunction repeatedly fails with AccessDenied on s3:PutObject to lambda-rca-bench-outputbucket-sglpryesfryi/compression/*. The error states that no identity-based policy allows s3:PutObject for the assumed role lambda-rca-bench-CompressionRole-tNi3wsTWkCVs. The failures are consistent across invocations and are not caused by memory, timeout or throttling, since the REPORT lines show normal durations and memory use (about 98-117 MB of 1024 MB). The other functions complete without errors. The fault is therefore a missing s3:PutObject grant in the execution role's policy, which is an IAM-layer problem."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"IAM\", \"function\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"candidates\": [\"s3:PutObject\", \"lambda-rca-bench-CompressionRole-tNi3wsTWkCVs\", \"arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/compression/*\"], \"explanation\": \"Within the window, CompressionFunction repeatedly fails with AccessDenied on s3:PutObject to lambda-rca-bench-outputbucket-sglpryesfryi/compression/*. The error states that no identity-based policy allows s3:PutObject for the assumed role lambda-rca-bench-CompressionRole-tNi3wsTWkCVs. The failures are consistent across invocations and are not caused by memory, timeout or throttling, since the REPORT lines show normal durations and memory use (about 98-117 MB of 1024 MB). The other functions complete without errors. The fault is therefore a missing s3:PutObject grant in the execution role's policy, which is an IAM-layer problem.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 602,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 34797,
+    "total_tokens": 35403
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 59610
+}

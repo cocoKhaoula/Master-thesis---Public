@@ -1,0 +1,40 @@
+{
+  "window_id": "W056",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W056",
+    "start": "2026-10-21T21:37:49Z",
+    "end": "2026-10-21T21:47:49Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-21T21:50:04Z",
+  "latency_s": 5.62,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+    "candidates": [
+      "OUTPUT_BUCKET environment variable of lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "IaC definition of the OUTPUT_BUCKET value for CompressionFunction in the infrastructure template",
+      "handler.py line 37 S3.put_object(Bucket=OUTPUT_BUCKET, ...) in CompressionFunction"
+    ],
+    "explanation": "Every CompressionFunction invocation in the window fails at S3 PutObject with NoSuchBucket ('The specified bucket does not exist'), while the other three functions complete normally. NoSuchBucket means the bucket named by OUTPUT_BUCKET does not exist, which points to a misconfigured bucket name in the function's environment rather than a permission problem. An AccessDenied error would have pointed to IAM, and the code path itself runs correctly up to the call. The most likely fix is to correct OUTPUT_BUCKET; the IaC template should be checked to see whether it declares the intended bucket."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"candidates\": [\"OUTPUT_BUCKET environment variable of lambda-rca-bench-CompressionFunction-kTL7GSn74As8\", \"IaC definition of the OUTPUT_BUCKET value for CompressionFunction in the infrastructure template\", \"handler.py line 37 S3.put_object(Bucket=OUTPUT_BUCKET, ...) in CompressionFunction\"], \"explanation\": \"Every CompressionFunction invocation in the window fails at S3 PutObject with NoSuchBucket ('The specified bucket does not exist'), while the other three functions complete normally. NoSuchBucket means the bucket named by OUTPUT_BUCKET does not exist, which points to a misconfigured bucket name in the function's environment rather than a permission problem. An AccessDenied error would have pointed to IAM, and the code path itself runs correctly up to the call. The most likely fix is to correct OUTPUT_BUCKET; the IaC template should be checked to see whether it declares the intended bucket.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 860,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 33718,
+    "total_tokens": 34582
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60319
+}

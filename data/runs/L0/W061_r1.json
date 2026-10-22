@@ -1,0 +1,40 @@
+{
+  "window_id": "W061",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W061",
+    "start": "2026-10-21T23:17:46Z",
+    "end": "2026-10-21T23:27:46Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-21T23:29:57Z",
+  "latency_s": 6.59,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+    "candidates": [
+      "TABLE_NAME environment variable on lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ (points to 'missing-table')",
+      "dynamodb:PutItem on lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm (scoped to the intended table ARN)",
+      "CrudApiFunction environment block in the IaC template (intended TABLE_NAME value)"
+    ],
+    "explanation": "Every CrudApiFunction invocation in the window fails with AccessDeniedException on dynamodb:PutItem against table/missing-table, while the other three functions succeed. The resource name 'missing-table' suggests the live TABLE_NAME environment variable points at a nonexistent table. The error text cites a missing identity-based policy, so the execution role's dynamodb:PutItem grant may be scoped to the intended table ARN, which would also produce this denial. The configuration value is the most likely cause, with the role policy and the IaC template as alternatives. The logs are truncated, so I could not confirm the environment variable or the role policy directly."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ\", \"candidates\": [\"TABLE_NAME environment variable on lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ (points to 'missing-table')\", \"dynamodb:PutItem on lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm (scoped to the intended table ARN)\", \"CrudApiFunction environment block in the IaC template (intended TABLE_NAME value)\"], \"explanation\": \"Every CrudApiFunction invocation in the window fails with AccessDeniedException on dynamodb:PutItem against table/missing-table, while the other three functions succeed. The resource name 'missing-table' suggests the live TABLE_NAME environment variable points at a nonexistent table. The error text cites a missing identity-based policy, so the execution role's dynamodb:PutItem grant may be scoped to the intended table ARN, which would also produce this denial. The configuration value is the most likely cause, with the role policy and the IaC template as alternatives. The logs are truncated, so I could not confirm the environment variable or the role policy directly.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 1072,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 32336,
+    "total_tokens": 33412
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60457
+}

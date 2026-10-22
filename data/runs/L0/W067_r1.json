@@ -1,0 +1,40 @@
+{
+  "window_id": "W067",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W067",
+    "start": "2026-10-22T01:46:56Z",
+    "end": "2026-10-22T01:56:56Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-22T01:59:14Z",
+  "latency_s": 9.05,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+    "candidates": [
+      "MemorySize = 128 MB on lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB",
+      "MemorySize property for ThumbnailerFunction in the IaC template",
+      "ReservedConcurrentExecutions for lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB"
+    ],
+    "explanation": "ThumbnailerFunction is configured at 128 MB while its peers run at 256 MB (Crud, Uploader) or 1024 MB (Compression). Its Max Memory Used is about 103-105 MB, roughly 82% of the allocation, so it has almost no headroom. Lambda allocates CPU in proportion to memory, which fits steady-state durations of about 380-400 ms against roughly 100 ms for the 256 MB Uploader on similar work. Cold starts are frequent, with many INIT_START events and Init Durations of 430-550 ms, and billed durations are inflated, for example 2587 ms billed for a 2154 ms duration. Some invocations reach about 2.2 s. This points to the function being under-provisioned at the configuration level. The template and concurrency candidates are inferred from the pattern; the truncated logs do not show the template or the timeout value directly."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB\", \"candidates\": [\"MemorySize = 128 MB on lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB\", \"MemorySize property for ThumbnailerFunction in the IaC template\", \"ReservedConcurrentExecutions for lambda-rca-bench-ThumbnailerFunction-j15TC8zuzVoB\"], \"explanation\": \"ThumbnailerFunction is configured at 128 MB while its peers run at 256 MB (Crud, Uploader) or 1024 MB (Compression). Its Max Memory Used is about 103-105 MB, roughly 82% of the allocation, so it has almost no headroom. Lambda allocates CPU in proportion to memory, which fits steady-state durations of about 380-400 ms against roughly 100 ms for the 256 MB Uploader on similar work. Cold starts are frequent, with many INIT_START events and Init Durations of 430-550 ms, and billed durations are inflated, for example 2587 ms billed for a 2154 ms duration. Some invocations reach about 2.2 s. This points to the function being under-provisioned at the configuration level. The template and concurrency candidates are inferred from the pattern; the truncated logs do not show the template or the timeout value directly.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 1679,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 36999,
+    "total_tokens": 38682
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60395
+}

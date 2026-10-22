@@ -1,0 +1,40 @@
+{
+  "window_id": "W057",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W057",
+    "start": "2026-10-21T22:03:00Z",
+    "end": "2026-10-21T22:13:00Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-21T22:15:21Z",
+  "latency_s": 6.01,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "IAM",
+    "function": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+    "candidates": [
+      "dynamodb:PutItem",
+      "TABLE_NAME environment variable (value resolves to missing-table)",
+      "CrudApiRole policy in the IaC template"
+    ],
+    "explanation": "Every CrudApiFunction invocation in the window fails with AccessDeniedException on dynamodb:PutItem against table/missing-table. The error states that no identity-based policy allows the action for lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm. The other three functions show no errors. The resource name 'missing-table' suggests the function's table name configuration may also be wrong, so the role's policy may not cover the intended table. The IAM denial is the immediate cause, and the table name is a secondary suspect."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"IAM\", \"function\": \"lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ\", \"candidates\": [\"dynamodb:PutItem\", \"TABLE_NAME environment variable (value resolves to missing-table)\", \"CrudApiRole policy in the IaC template\"], \"explanation\": \"Every CrudApiFunction invocation in the window fails with AccessDeniedException on dynamodb:PutItem against table/missing-table. The error states that no identity-based policy allows the action for lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm. The other three functions show no errors. The resource name 'missing-table' suggests the function's table name configuration may also be wrong, so the role's policy may not cover the intended table. The IAM denial is the immediate cause, and the table name is a secondary suspect.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 970,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 32689,
+    "total_tokens": 33663
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60425
+}

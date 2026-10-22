@@ -1,0 +1,143 @@
+{
+  "window_id": "W029",
+  "level": "L3",
+  "repetition": 1,
+  "window": {
+    "window_id": "W029",
+    "start": "2026-10-21T16:46:20Z",
+    "end": "2026-10-21T16:56:20Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-21T17:01:00Z",
+  "latency_s": 301.27,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+    "candidates": [
+      "ReservedConcurrentExecutions=1 on lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+      "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ live configuration (ReservedConcurrentExecutions)",
+      "AWS::Serverless::Function CrudApiFunction in the SAM template (missing ReservedConcurrentExecutions)"
+    ],
+    "explanation": "The live CrudApiFunction has ReservedConcurrentExecutions=1, but the committed SAM template declares no reserved concurrency for it, so this is configuration drift. During 16:46-16:56Z the function received about 35-42 invocations per minute and was throttled 3-10 times per minute, which is consistent with a concurrency cap of 1. The other three functions match the template on memory, timeout, environment variables and concurrency. The function's last modification (2026-10-20T23:50Z) predates the window, so the drift was not introduced inside it; the throttling is what occurs in the window."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ\", \"candidates\": [\"ReservedConcurrentExecutions=1 on lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ\", \"lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ live configuration (ReservedConcurrentExecutions)\", \"AWS::Serverless::Function CrudApiFunction in the SAM template (missing ReservedConcurrentExecutions)\"], \"explanation\": \"The live CrudApiFunction has ReservedConcurrentExecutions=1, but the committed SAM template declares no reserved concurrency for it, so this is configuration drift. During 16:46-16:56Z the function received about 35-42 invocations per minute and was throttled 3-10 times per minute, which is consistent with a concurrency cap of 1. The other three functions match the template on memory, timeout, environment variables and concurrency. The function's last modification (2026-10-20T23:50Z) predates the window, so the drift was not introduced inside it; the throttling is what occurs in the window.\"}\n",
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 1543,
+    "cache_read_input_tokens": 73233,
+    "cache_write_input_tokens": 40539,
+    "total_tokens": 115323
+  },
+  "tools_available": [
+    "analyze_log_group",
+    "analyze_metric",
+    "cancel_logs_insight_query",
+    "describe_log_groups",
+    "execute_cwl_insights_batch",
+    "execute_log_insights_query",
+    "execute_promql_query",
+    "execute_promql_range_query",
+    "get_active_alarms",
+    "get_alarm_history",
+    "get_group",
+    "get_logs_insight_query_results",
+    "get_managed_policy_document",
+    "get_metric_data",
+    "get_metric_metadata",
+    "get_promql_label_values",
+    "get_promql_labels",
+    "get_promql_series",
+    "get_recommended_metric_alarms",
+    "get_role_policy",
+    "get_user",
+    "get_user_policy",
+    "list_groups",
+    "list_policies",
+    "list_role_policies",
+    "list_roles",
+    "list_user_policies",
+    "list_users",
+    "read_iac_template",
+    "read_live_configuration",
+    "recommend_indexes_account",
+    "recommend_indexes_loggroup",
+    "simulate_principal_policy"
+  ],
+  "tool_calls": [
+    {
+      "id": "toolu_01YaCnBB9LVQ3sziYZpcegjZ",
+      "name": "read_live_configuration",
+      "input": {},
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ\": {\n    \"MemorySize\": 256,\n    \"Timeout\": 10,\n    \"Environment\": {\n      \"TABLE_NAME\": \"lambda-rca-bench-CartTable-16124ULMPVK4O\"\n    },\n    \"ReservedConcurrentExecutions\": 1,\n    \"Role\": \"arn:aws:iam::708553018645:role/lambda-rca-bench-CrudApiRole-yMmCSPkJv9jm\",\n    \"LastModified\": \"2026-10-20T23:50:12.000+0000\",\n    \"State\": \"Active\",\n    \"LastUpdateStatus\": \"Successful\"\n  },\n  \"lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\": {\n    \"MemorySiz",
+        "chars": 1900
+      }
+    },
+    {
+      "id": "toolu_01XMdyKsebnGEhWA7CikWTpb",
+      "name": "read_iac_template",
+      "input": {},
+      "result": {
+        "status": "success",
+        "preview": "AWSTemplateFormatVersion: \"2010-09-09\"\nTransform: AWS::Serverless-2016-10-31\nDescription: >\n  Benchmark application for the thesis \"Cross-Layer Context for LLM-Based Detection and\n  Root-Cause Analysis of Configuration Anomalies in AWS Lambda\". Four SeBS functions\n  (Table 3.2). This template is the intended state of the application.\n\nGlobals:\n  Function:\n    Runtime: python3.12\n    Architectures: [x86_64]\n    Tracing: PassThrough\n    LoggingConfig:\n      LogFormat: Text\n\nResources:\n  # --------",
+        "chars": 6762
+      }
+    },
+    {
+      "id": "toolu_01MHP1dFLagWV1XBtDfTFQkp",
+      "name": "get_metric_data",
+      "input": {
+        "namespace": "AWS/Lambda",
+        "metric_name": "Throttles",
+        "dimensions": [
+          {
+            "name": "FunctionName",
+            "value": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ"
+          }
+        ],
+        "start_time": "2026-10-21T16:46:20Z",
+        "end_time": "2026-10-21T16:56:20Z",
+        "statistic": "Sum",
+        "region": "eu-north-1",
+        "target_datapoints": 10
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"metricDataResults\": [\n    {\n      \"id\": \"m1\",\n      \"label\": \"Throttles\",\n      \"statusCode\": \"Complete\",\n      \"datapoints\": [\n        {\n          \"timestamp\": \"2026-10-21T18:46:00+02:00\",\n          \"value\": 7.0\n        },\n        {\n          \"timestamp\": \"2026-10-21T18:47:00+02:00\",\n          \"value\": 8.0\n        },\n        {\n          \"timestamp\": \"2026-10-21T18:48:00+02:00\",\n          \"value\": 4.0\n        },\n        {\n          \"timestamp\": \"2026-10-21T18:49:00+02:00\",\n          \"value\"",
+        "chars": 1152
+      }
+    },
+    {
+      "id": "toolu_01JZ3DV7vKctMzgyejFgnPC2",
+      "name": "get_metric_data",
+      "input": {
+        "namespace": "AWS/Lambda",
+        "metric_name": "Invocations",
+        "dimensions": [
+          {
+            "name": "FunctionName",
+            "value": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ"
+          }
+        ],
+        "start_time": "2026-10-21T16:46:20Z",
+        "end_time": "2026-10-21T16:56:20Z",
+        "statistic": "Sum",
+        "region": "eu-north-1",
+        "target_datapoints": 10
+      },
+      "result": {
+        "status": "success",
+        "preview": "{\n  \"metricDataResults\": [\n    {\n      \"id\": \"m1\",\n      \"label\": \"Invocations\",\n      \"statusCode\": \"Complete\",\n      \"datapoints\": [\n        {\n          \"timestamp\": \"2026-10-21T18:46:00+02:00\",\n          \"value\": 37.0\n        },\n        {\n          \"timestamp\": \"2026-10-21T18:47:00+02:00\",\n          \"value\": 39.0\n        },\n        {\n          \"timestamp\": \"2026-10-21T18:48:00+02:00\",\n          \"value\": 37.0\n        },\n        {\n          \"timestamp\": \"2026-10-21T18:49:00+02:00\",\n          \"v",
+        "chars": 1163
+      }
+    }
+  ],
+  "prompt_chars": 385
+}
