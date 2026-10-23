@@ -86,7 +86,13 @@ class RemovePermission(Fault):
     def inject(self) -> Injection:
         action = self.ctx.fn_cfg["primary_action"]
         original = self._get_policy()
-        self._put_policy(remove_action(original, action))
+        reduced = remove_action(original, action)
+        if reduced["Statement"]:
+            self._put_policy(reduced)
+        else:
+            # the action was the only permission: IAM rejects a policy without statements,
+            # so the inline policy is removed (the revert puts the original back)
+            self.ctx.iam.delete_role_policy(RoleName=self.ctx.fn.role_name, PolicyName=self._policy_name())
         self._iam_settle()
         return Injection(
             subtype="drift", root_cause_layer="IAM",
