@@ -1,0 +1,23 @@
+{
+  "window_id": "W058",
+  "started": "2026-10-23T04:32:37Z",
+  "finished": "2026-10-23T04:32:44Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "UploaderRole",
+      "physical_id": "lambda-rca-bench-UploaderRole-R55h76yRW00a",
+      "resource_type": "AWS::IAM::Role",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/Policies",
+          "expected": "[{\"PolicyDocument\":\"{\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Sid\\\":\\\"WriteOutput\\\",\\\"Effect\\\":\\\"Allow\\\",\\\"Action\\\":\\\"s3:PutObject\\\",\\\"Resource\\\":\\\"arn:aws:s3:::lambda-rca-bench-outputbucket-sglpryesfryi/*\\\"}]}\",\"PolicyName\":\"app-policy\"}]",
+          "actual": "null",
+          "type": "REMOVE"
+        }
+      ]
+    }
+  ]
+}

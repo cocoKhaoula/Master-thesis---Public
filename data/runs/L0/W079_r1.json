@@ -1,0 +1,40 @@
+{
+  "window_id": "W079",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W079",
+    "start": "2026-10-22T19:56:12Z",
+    "end": "2026-10-22T20:06:12Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-22T20:08:24Z",
+  "latency_s": 6.18,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+    "candidates": [
+      "OUTPUT_BUCKET environment variable on lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+      "IaC definition of the output bucket referenced by OUTPUT_BUCKET in the application template",
+      "s3:PutObject target bucket name in the handler (handler.py line 29)"
+    ],
+    "explanation": "Every UploaderFunction invocation in the window fails with NoSuchBucket on S3 PutObject to OUTPUT_BUCKET, at line 29 of handler.py. The other three functions complete normally. NoSuchBucket means the bucket name the function resolves does not exist, which points to a wrong or stale OUTPUT_BUCKET value in the live configuration rather than a permissions problem. An IAM denial would surface as AccessDenied, not NoSuchBucket. No tool results were available, so the candidates are inferred from the log evidence and have not been verified against the live configuration or template."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\", \"candidates\": [\"OUTPUT_BUCKET environment variable on lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\", \"IaC definition of the output bucket referenced by OUTPUT_BUCKET in the application template\", \"s3:PutObject target bucket name in the handler (handler.py line 29)\"], \"explanation\": \"Every UploaderFunction invocation in the window fails with NoSuchBucket on S3 PutObject to OUTPUT_BUCKET, at line 29 of handler.py. The other three functions complete normally. NoSuchBucket means the bucket name the function resolves does not exist, which points to a wrong or stale OUTPUT_BUCKET value in the live configuration rather than a permissions problem. An IAM denial would surface as AccessDenied, not NoSuchBucket. No tool results were available, so the candidates are inferred from the log evidence and have not been verified against the live configuration or template.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 796,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 34104,
+    "total_tokens": 34904
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60370
+}

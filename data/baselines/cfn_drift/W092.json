@@ -1,0 +1,23 @@
+{
+  "window_id": "W092",
+  "started": "2026-10-23T00:58:45Z",
+  "finished": "2026-10-23T00:58:52Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "CompressionFunction",
+      "physical_id": "lambda-rca-bench-CompressionFunction-kTL7GSn74As8",
+      "resource_type": "AWS::Lambda::Function",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/Environment/Variables/OUTPUT_BUCKET",
+          "expected": "lambda-rca-bench-outputbucket-sglpryesfryi",
+          "actual": "missing-bucket-lambda-rca",
+          "type": "NOT_EQUAL"
+        }
+      ]
+    }
+  ]
+}

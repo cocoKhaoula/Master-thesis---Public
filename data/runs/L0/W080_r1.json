@@ -1,0 +1,36 @@
+{
+  "window_id": "W080",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W080",
+    "start": "2026-10-22T20:20:21Z",
+    "end": "2026-10-22T20:30:21Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-22T20:32:32Z",
+  "latency_s": 7.89,
+  "answer": {
+    "anomaly": false,
+    "root_cause_layer": "NONE",
+    "function": null,
+    "candidates": [],
+    "explanation": "The visible in-window events show no errors, timeouts, throttling or access-denied failures. Every REPORT line completes normally. Max memory used stays well below allocation: about 91 to 99 MB on the 256 MB functions and about 98 to 106 MB on the 1024 MB Thumbnailer and Compression functions. Durations are steady (about 25 to 600 ms). The Thumbnailer and Compression functions are over-provisioned at 1024 MB, which is a tuning opportunity rather than an anomaly. Confidence is limited because about 4,262 events were truncated, so the rest of the window was not inspected."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": false, \"root_cause_layer\": \"NONE\", \"function\": null, \"candidates\": [], \"explanation\": \"The visible in-window events show no errors, timeouts, throttling or access-denied failures. Every REPORT line completes normally. Max memory used stays well below allocation: about 91 to 99 MB on the 256 MB functions and about 98 to 106 MB on the 1024 MB Thumbnailer and Compression functions. Durations are steady (about 25 to 600 ms). The Thumbnailer and Compression functions are over-provisioned at 1024 MB, which is a tuning opportunity rather than an anomaly. Confidence is limited because about 4,262 events were truncated, so the rest of the window was not inspected.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 1142,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 37045,
+    "total_tokens": 38191
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60463
+}

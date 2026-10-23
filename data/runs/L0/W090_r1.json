@@ -1,0 +1,40 @@
+{
+  "window_id": "W090",
+  "level": "L0",
+  "repetition": 1,
+  "window": {
+    "window_id": "W090",
+    "start": "2026-10-23T00:03:15Z",
+    "end": "2026-10-23T00:13:15Z"
+  },
+  "provider": "anthropic",
+  "model_id": "claude-haiku-5-5",
+  "temperature": "model default",
+  "started": "2026-10-23T00:15:27Z",
+  "latency_s": 5.68,
+  "answer": {
+    "anomaly": true,
+    "root_cause_layer": "CONFIG",
+    "function": "lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+    "candidates": [
+      "OUTPUT_BUCKET environment variable of lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+      "S3 bucket name referenced by OUTPUT_BUCKET in the IaC template for UploaderFunction",
+      "handler.py line 29 S3.put_object(Bucket=OUTPUT_BUCKET, ...)"
+    ],
+    "explanation": "Every UploaderFunction invocation in the window fails with NoSuchBucket on PutObject to OUTPUT_BUCKET, while CrudApiFunction, ThumbnailerFunction and CompressionFunction complete normally. NoSuchBucket means the configured bucket name does not exist, which points to a misconfigured bucket name rather than missing permissions (that would surface as AccessDenied, so IAM is unlikely). The most likely cause is the OUTPUT_BUCKET environment variable on the live function, with the IaC template as the intended-state source to check. The handler code itself is only a secondary candidate. No tool outputs beyond the logs were available, so the environment variable value and template were not directly verified."
+  },
+  "valid": true,
+  "parse_error": null,
+  "error": null,
+  "raw_text": "{\"anomaly\": true, \"root_cause_layer\": \"CONFIG\", \"function\": \"lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\", \"candidates\": [\"OUTPUT_BUCKET environment variable of lambda-rca-bench-UploaderFunction-f4370rn3xmWQ\", \"S3 bucket name referenced by OUTPUT_BUCKET in the IaC template for UploaderFunction\", \"handler.py line 29 S3.put_object(Bucket=OUTPUT_BUCKET, ...)\"], \"explanation\": \"Every UploaderFunction invocation in the window fails with NoSuchBucket on PutObject to OUTPUT_BUCKET, while CrudApiFunction, ThumbnailerFunction and CompressionFunction complete normally. NoSuchBucket means the configured bucket name does not exist, which points to a misconfigured bucket name rather than missing permissions (that would surface as AccessDenied, so IAM is unlikely). The most likely cause is the OUTPUT_BUCKET environment variable on the live function, with the IaC template as the intended-state source to check. The handler code itself is only a secondary candidate. No tool outputs beyond the logs were available, so the environment variable value and template were not directly verified.\"}\n",
+  "usage": {
+    "input_tokens": 4,
+    "output_tokens": 919,
+    "cache_read_input_tokens": 0,
+    "cache_write_input_tokens": 33893,
+    "total_tokens": 34816
+  },
+  "tools_available": [],
+  "tool_calls": [],
+  "prompt_chars": 60257
+}

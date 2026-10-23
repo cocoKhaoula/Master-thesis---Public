@@ -1,0 +1,23 @@
+{
+  "window_id": "W074",
+  "started": "2026-10-22T18:00:06Z",
+  "finished": "2026-10-22T18:00:13Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "CrudApiFunction",
+      "physical_id": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+      "resource_type": "AWS::Lambda::Function",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/Environment/Variables/TABLE_NAME",
+          "expected": "lambda-rca-bench-CartTable-16124ULMPVK4O",
+          "actual": "missing-table",
+          "type": "NOT_EQUAL"
+        }
+      ]
+    }
+  ]
+}

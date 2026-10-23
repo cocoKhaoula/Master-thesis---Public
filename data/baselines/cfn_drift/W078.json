@@ -1,0 +1,23 @@
+{
+  "window_id": "W078",
+  "started": "2026-10-22T19:38:57Z",
+  "finished": "2026-10-22T19:39:04Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "UploaderFunction",
+      "physical_id": "lambda-rca-bench-UploaderFunction-f4370rn3xmWQ",
+      "resource_type": "AWS::Lambda::Function",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/Environment/Variables/OUTPUT_BUCKET",
+          "expected": "lambda-rca-bench-outputbucket-sglpryesfryi",
+          "actual": "missing-bucket-lambda-rca",
+          "type": "NOT_EQUAL"
+        }
+      ]
+    }
+  ]
+}

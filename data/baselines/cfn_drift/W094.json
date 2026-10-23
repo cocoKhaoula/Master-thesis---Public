@@ -1,0 +1,29 @@
+{
+  "window_id": "W094",
+  "started": "2026-10-23T01:22:49Z",
+  "finished": "2026-10-23T01:22:55Z",
+  "stack_drift_status": "DRIFTED",
+  "detection_status": "DETECTION_COMPLETE",
+  "drifted_resources": [
+    {
+      "logical_id": "CrudApiFunction",
+      "physical_id": "lambda-rca-bench-CrudApiFunction-QnX8DYVUvVQZ",
+      "resource_type": "AWS::Lambda::Function",
+      "status": "MODIFIED",
+      "differences": [
+        {
+          "path": "/MemorySize",
+          "expected": "256",
+          "actual": "128",
+          "type": "NOT_EQUAL"
+        },
+        {
+          "path": "/Timeout",
+          "expected": "10",
+          "actual": "3",
+          "type": "NOT_EQUAL"
+        }
+      ]
+    }
+  ]
+}
